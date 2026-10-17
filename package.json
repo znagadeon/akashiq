@@ -8,7 +8,8 @@
     "check": "tsc --noEmit",
     "lint": "biome check .",
     "format": "biome check --write .",
-    "dashboard": "akashiq dashboard packages"
+    "dashboard": "akashiq dashboard packages",
+    "build": "pnpm -r build"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.5.15",

@@ -1,6 +1,6 @@
 {
   "name": "@akashiq/core",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Decision types and guards for recording why your code exists and linking it to tests.",
   "license": "MIT",
   "repository": {
@@ -22,12 +22,21 @@
         "types": "./dist/index.d.ts",
         "import": "./dist/index.js"
       }
-    }
+    },
+    "access": "public"
   },
   "files": [
     "dist"
   ],
   "scripts": {
-    "build": "tsc -p tsconfig.build.json"
-  }
+    "build": "node -e \"require('node:fs').rmSync('dist', { recursive: true, force: true })\" && tsc -p tsconfig.build.json",
+    "prepack": "pnpm build"
+  },
+  "keywords": [
+    "decisions",
+    "traceability",
+    "testing",
+    "ai-agents",
+    "typescript"
+  ]
 }

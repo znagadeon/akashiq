@@ -1,6 +1,6 @@
 {
   "name": "akashiq",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Remember why your code exists. Collects decisions and shows the tests that guard them.",
   "license": "MIT",
   "repository": {
@@ -13,11 +13,35 @@
     "url": "https://github.com/znagadeon/akashiq/issues"
   },
   "type": "module",
-  "dependencies": {
-    "@akashiq/core": "workspace:*",
-    "typescript": "^6.0.3"
-  },
+  "keywords": [
+    "decisions",
+    "traceability",
+    "testing",
+    "ai-agents",
+    "agent-skills",
+    "dashboard",
+    "typescript"
+  ],
   "bin": {
     "akashiq": "./src/cli.ts"
+  },
+  "publishConfig": {
+    "bin": {
+      "akashiq": "./dist/cli.js"
+    }
+  },
+  "files": [
+    "dist",
+    "skills"
+  ],
+  "scripts": {
+    "build": "node -e \"require('node:fs').rmSync('dist', { recursive: true, force: true })\" && tsc -p tsconfig.build.json && node -e \"require('node:fs').cpSync('src/dashboard/ui', 'dist/dashboard/ui', { recursive: true })\"",
+    "prepack": "pnpm build"
+  },
+  "dependencies": {
+    "typescript": "^6.0.3"
+  },
+  "devDependencies": {
+    "@akashiq/core": "workspace:*"
   }
 }
