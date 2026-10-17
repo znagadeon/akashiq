@@ -332,10 +332,18 @@ select {
   font-size: 12px;
 }
 
+.value-row {
+  display: flex;
+  align-items: baseline;
+  margin: 8px 0 0;
+}
+
 .value {
+  flex: 1;
+  min-width: 0;
   max-height: 240px;
   overflow: auto;
-  margin: 10px 0 0;
+  margin: 0;
   padding: 8px 12px;
   background: var(--bg-subtle);
   border-radius: 6px;

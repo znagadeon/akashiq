@@ -149,7 +149,8 @@ function decisionRow(entry) {
     ),
     entry.decision !== undefined && h("p", { class: "decision" }, entry.decision),
     entry.reason !== undefined && h("p", { class: "reason" }, h("span", { class: "label" }, "Why"), entry.reason),
-    entry.value !== undefined && h("pre", { class: "value" }, entry.value),
+    entry.value !== undefined &&
+      h("div", { class: "value-row" }, h("span", { class: "label" }, "Value"), h("pre", { class: "value" }, entry.value)),
     links("Relies on", entry.dependsOn),
     links("Relied on by", entry.referrers),
     tests > 0 &&
