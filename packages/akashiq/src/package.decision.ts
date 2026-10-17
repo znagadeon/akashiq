@@ -12,4 +12,7 @@ export const packageDecisions = {
     decision: "Write relative imports with the .ts extension and let the compiler rewrite them to .js",
     reason: "Imports match the actual file names, and Node can run the sources directly without a build",
   } satisfies Decision,
+  mitLicense: {
+    decision: "License akashiq under MIT",
+  } satisfies Decision,
 };
