@@ -33,7 +33,7 @@ Akashiq은 모든 것을 기억하려 하지 않습니다. 잊어버리면 안 �
 npm install --save-dev akashiq @akashiq/core
 ```
 
-`@akashiq/core`에는 `Decision` 타입과 `guards`가 있고, 다른 패키지에 의존하지 않습니다. `akashiq`에는 대시보드, CLI, 에이전트 스킬이 있고, Node.js 22 이상이 필요합니다. 결정 파일은 타입만 가져오고 `guards`는 테스트에서만 쓰기 때문에, 둘 다 devDependency로 설치하면 됩니다.
+`@akashiq/core`에는 `Decision` 타입과 `guards`가 있고, 다른 패키지에 의존하지 않습니다. `akashiq`에는 대시보드, CLI, 에이전트 스킬이 있고, Node.js 22.17 이상이 필요합니다. 결정 파일은 타입만 가져오고 `guards`는 테스트에서만 쓰기 때문에, 둘 다 devDependency로 설치하면 됩니다.
 
 ## 사용법
 
@@ -146,18 +146,31 @@ npx akashiq changes        # or run it yourself: HEAD~1..HEAD by default, or --f
 
 Akashiq은 소스를 읽기만 하고 실행하지 않습니다. 그래서 프로젝트가 빌드되지 않거나 개발 환경이 갖춰지지 않아도 동작합니다.
 
-- 결정 파일은 `*.decision.ts`이고, 테스트 파일은 `*.spec.*`과 `*.test.*`(`.ts`, `.tsx`, `.mts`, `.cts`)입니다. `node_modules`, `dist`, `.git`은 건너뜁니다.
+- 결정 파일은 `*.decision.ts`이고, 테스트 파일은 `*.spec.*`과 `*.test.*`(`.ts`, `.tsx`, `.mts`, `.cts`)입니다. `node_modules`, `dist`, `.git`과 `ignore`에 적은 경로(아래 참고)는 건너뜁니다.
 - 내보낸(export) 객체의 속성 중 값에 `decision`이나 `reason` 속성이 있는 것이 결정입니다.
 - `guards`의 첫 번째 인자가 결정의 ID와 똑같이 적혀 있으면 그 테스트와 결정이 연결됩니다.
 - 값을 텍스트로 읽기 때문에, 상수를 참조하거나 객체를 펼치거나(spread) 함수를 호출하는 값은 따로 표시합니다. 실제 값을 보여 주거나 추적할 수 없기 때문입니다.
 
 전체 프로젝트 예시는 [`examples/minimal`](examples/minimal)에 있습니다.
 
+## 설정
+
+설정은 프로젝트 루트의 `akashiq.config.json`에 둡니다. 프로젝트 루트는 스캔하는 디렉터리이고, `akashiq changes`에서는 git 저장소의 루트입니다. 모든 설정은 선택입니다.
+
+```json
+{
+  "ignore": ["examples/**", "**/fixtures/**"]
+}
+```
+
+| 설정 | |
+|---|---|
+| `ignore` | 대시보드와 커밋 경고에서 뺄 경로의 glob 패턴입니다. 프로젝트 루트 기준입니다. 자체 결정을 가진 예제나 픽스처를 패키지 옆에 두는 모노레포에서 유용합니다. |
+
 ## 현황
 
 Akashiq은 초기 단계(0.x)입니다. 1인 게임 프로젝트에서 결정 약 450개와 그 테스트를 관리하던 도구를 떼어 낸 것입니다. 앞으로 생각하고 있는 것은 다음과 같습니다.
 
-- 스캔에서 뺄 경로 설정. 자체 결정을 가진 예제나 픽스처를 패키지 옆에 두는 모노레포를 위한 것입니다
 - 직접 의존하는 결정을 넘어 `dependsOn`을 따라가는 변경 영향 분석
 - 새 요구사항과 기존 결정 사이의 충돌 감지
 - 테스트가 지키지 않는 결정으로 만드는 QA 체크리스트, 릴리스용 정책 변경 노트

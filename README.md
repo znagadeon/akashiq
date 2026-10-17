@@ -33,7 +33,7 @@ This is requirements traceability, applied to AI-driven development and kept ins
 npm install --save-dev akashiq @akashiq/core
 ```
 
-`@akashiq/core` holds the `Decision` types and `guards`, and has no dependencies. `akashiq` holds the dashboard, the CLI, and the agent skill, and needs Node.js 22 or later. Both can be dev dependencies: decision files import only types, and `guards` is used only in tests.
+`@akashiq/core` holds the `Decision` types and `guards`, and has no dependencies. `akashiq` holds the dashboard, the CLI, and the agent skill, and needs Node.js 22.17 or later. Both can be dev dependencies: decision files import only types, and `guards` is used only in tests.
 
 ## Usage
 
@@ -146,18 +146,31 @@ After each commit, Akashiq warns about decisions the commit may have affected: a
 
 Akashiq reads your source and never runs it, so it works even when the project can't build or its environment isn't set up.
 
-- Decision files are `*.decision.ts`. Test files are `*.spec.*` and `*.test.*` (`.ts`, `.tsx`, `.mts`, `.cts`). `node_modules`, `dist`, and `.git` are skipped.
+- Decision files are `*.decision.ts`. Test files are `*.spec.*` and `*.test.*` (`.ts`, `.tsx`, `.mts`, `.cts`). `node_modules`, `dist`, `.git`, and the paths in `ignore` (see below) are skipped.
 - A decision is a property of an exported object whose value has a `decision` or `reason` property.
 - A test is linked to a decision when the first argument of `guards` is written exactly as the decision's ID.
 - Because values are read as text, a value that refers to a constant, spreads an object, or calls a function is flagged: its actual value can't be shown or tracked.
 
 See [`examples/minimal`](examples/minimal) for a complete project.
 
+## Configuration
+
+Settings go in `akashiq.config.json` at the project root, the directory you scan and the root of the git repository for `akashiq changes`. Every setting is optional.
+
+```json
+{
+  "ignore": ["examples/**", "**/fixtures/**"]
+}
+```
+
+| Setting | |
+|---|---|
+| `ignore` | Glob patterns, relative to the project root, of paths to leave out of the dashboard and the commit warnings. Useful in a monorepo that keeps examples or fixtures with their own decisions next to the packages. |
+
 ## Status
 
 Akashiq is at an early stage (0.x). It was extracted from a solo game project where it kept about 450 decisions and their tests in shape. Ideas for what comes next:
 
-- Paths to skip when scanning, for monorepos that keep examples or fixtures with their own decisions next to the packages
 - Change impact through `dependsOn` beyond direct dependents
 - Detecting conflicts between a new requirement and existing decisions
 - QA checklists from decisions that no test guards, and policy change notes for releases

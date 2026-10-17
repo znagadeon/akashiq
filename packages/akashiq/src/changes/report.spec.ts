@@ -78,6 +78,15 @@ describe("warnings after a commit", () => {
     expect(warnings.map((warning) => [warning.id, warning.valueChanged])).toEqual([["shippingDecisions.freeShippingThreshold", true]]);
   });
 
+  it("stays quiet about decisions and tests in ignored paths", () => {
+    repository = testRepository();
+    repository.commit({ "examples/shop/shipping.decision.ts": decisions("50") });
+    repository.commit({ "examples/shop/shipping.decision.ts": decisions("50").replace("just below", "right below") });
+    const git = gitRepository(repository.root);
+    expect(collectWarnings(git, "HEAD~1", "HEAD")).toHaveLength(1);
+    expect(collectWarnings(git, "HEAD~1", "HEAD", ["examples/**"])).toEqual([]);
+  });
+
   it("stays quiet when a commit touches neither decisions nor the tests that guard them", () => {
     expect(warningsFor({ "src/shipping.ts": "export const shipsFree = () => true;\n" })).toEqual([]);
   });

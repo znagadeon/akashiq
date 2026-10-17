@@ -14,7 +14,7 @@
   },
   "type": "module",
   "engines": {
-    "node": ">=22"
+    "node": ">=22.17"
   },
   "keywords": [
     "decisions",

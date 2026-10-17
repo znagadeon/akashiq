@@ -4,6 +4,7 @@ import { parseArgs } from "node:util";
 import { gitRepository } from "./changes/git.ts";
 import { hookCommand, installHook } from "./changes/hook.ts";
 import { collectWarnings, formatWarnings } from "./changes/report.ts";
+import { loadConfig } from "./config.ts";
 import { startDashboard } from "./dashboard/server.ts";
 import { dashboardDecisions } from "./dashboard.decision.ts";
 import { defaultSkillDirectories, installSkill } from "./skill/install.ts";
@@ -54,7 +55,7 @@ if (values.help) {
   const from = values.from ?? "HEAD~1";
   // The first commit has nothing to compare with.
   if (repository.exists(from)) {
-    const report = formatWarnings(collectWarnings(repository, from, values.to ?? "HEAD"));
+    const report = formatWarnings(collectWarnings(repository, from, values.to ?? "HEAD", loadConfig(repository.root).ignore));
     if (report) console.warn(report);
   }
 } else if (command === "hook" && rest[0] === "install") {

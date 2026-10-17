@@ -3,6 +3,7 @@ import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { guards } from "@akashiq/core";
 import { afterEach, describe, expect, it } from "vitest";
+import { configDecisions } from "../config.decision.ts";
 import { parserDecisions } from "../parser.decision.ts";
 import { parseDecisions } from "./decisions.ts";
 import { scanProject } from "./project.ts";
@@ -60,6 +61,24 @@ describe("scanProject", () => {
       expect(scan.decisions).toEqual([expect.objectContaining({ id: "brokenDecisions.a", value: "1" })]);
       expect(scan.guards).toEqual([expect.objectContaining({ decision: "brokenDecisions.a", name: "guards a decision" })]);
       expect(scan.unknownGuards).toEqual([]);
+    });
+  });
+
+  it("leaves out the paths that akashiq.config.json ignores", () => {
+    guards(configDecisions.ignoreGlobs, () => {
+      const decision = (name: string) => `export const ${name}Decisions = { a: { decision: "${name}" } };`;
+      const root = project({
+        "packages/app/src/app.decision.ts": decision("app"),
+        "examples/minimal/src/shop.decision.ts": decision("shop"),
+        "packages/app/test/fixtures/fixture.decision.ts": decision("fixture"),
+        "examples/minimal/src/shop.test.ts": 'it("a", () => guards(shopDecisions.a, () => {}));',
+      });
+      expect(scanProject(root, []).decisions).toHaveLength(3);
+
+      writeFileSync(join(root, "akashiq.config.json"), '{ "ignore": ["examples/**", "**/fixtures/**"] }');
+      const scan = scanProject(root);
+      expect(scan.decisions.map((entry) => entry.id)).toEqual(["appDecisions.a"]);
+      expect(scan.guards).toEqual([]);
     });
   });
 

@@ -39,10 +39,10 @@ export interface DecisionWarning {
   referrers: DecisionEntry[];
 }
 
-const isTypeScript = (path: string | undefined) => path !== undefined && /\.(ts|tsx|mts|cts)$/.test(path) && isScanned(path);
-
-/** Warnings for decisions a change between two revisions may have affected, in the order they come up. */
-export function collectWarnings(repository: Repository, from: string, to: string): DecisionWarning[] {
+/** Warnings for decisions a change between two revisions may have affected, in the order they come up. Paths matching ignore are left out. */
+export function collectWarnings(repository: Repository, from: string, to: string, ignore: readonly string[] = []): DecisionWarning[] {
+  const isTypeScript = (path: string | undefined) => path !== undefined && /\.(ts|tsx|mts|cts)$/.test(path) && isScanned(path, ignore);
+  const isDecision = (path: string | undefined) => path !== undefined && isDecisionFile(path, ignore);
   const guards = new Map<string, Map<string, GuardChange>>();
   const changes = new Map<string, DecisionChange>();
 
@@ -72,14 +72,14 @@ export function collectWarnings(repository: Repository, from: string, to: string
     if (file.oldPath) record(file.oldPath, before, file.oldHunks);
     if (file.newPath) record(file.newPath, after, file.newHunks);
 
-    if (isDecisionFile(file.oldPath ?? "") || isDecisionFile(file.newPath ?? "")) {
+    if (isDecision(file.oldPath) || isDecision(file.newPath)) {
       for (const change of changedDecisions(file.newPath ?? file.oldPath ?? "", before, after)) changes.set(change.id, change);
     }
   }
 
   const current = repository
     .files(to)
-    .filter(isDecisionFile)
+    .filter(isDecision)
     .flatMap((path) => parseDecisions(path, repository.show(to, path) ?? ""));
   const byId = new Map(current.map((entry) => [entry.id, entry]));
   const referrers = referrersOf(current);

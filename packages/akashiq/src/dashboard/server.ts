@@ -14,8 +14,8 @@ const assets: Record<string, { file: string; type: string }> = {
   "/style.css": { file: "style.css", type: "text/css; charset=utf-8" },
 };
 
-/** Files whose change can change what the dashboard shows. Same suffixes scanProject reads. */
-const watched = /\.decision\.ts$|\.(spec|test)\.(ts|tsx|mts|cts)$/;
+/** Files whose change can change what the dashboard shows: the suffixes scanProject reads, and the config. */
+const watched = /\.decision\.ts$|\.(spec|test)\.(ts|tsx|mts|cts)$|(^|[\\/])akashiq\.config\.json$/;
 const ignored = /(^|[\\/])(node_modules|dist|\.git)([\\/]|$)/;
 
 export interface Dashboard {
