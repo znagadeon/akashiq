@@ -1,0 +1,9 @@
+{
+  "name": "akashiq",
+  "version": "0.0.0",
+  "description": "Remember why your code exists. Collects decisions and shows the tests that guard them.",
+  "type": "module",
+  "dependencies": {
+    "@akashiq/core": "workspace:*"
+  }
+}

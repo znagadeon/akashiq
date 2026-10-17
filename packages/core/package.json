@@ -1,0 +1,23 @@
+{
+  "name": "@akashiq/core",
+  "version": "0.0.0",
+  "description": "Decision types and guards for recording why your code exists and linking it to tests.",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "publishConfig": {
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "import": "./dist/index.js"
+      }
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json"
+  }
+}
