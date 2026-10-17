@@ -8,6 +8,9 @@ importers:
 
   .:
     devDependencies:
+      '@akashiq/core':
+        specifier: workspace:*
+        version: link:packages/core
       '@biomejs/biome':
         specifier: ^2.5.15
         version: 2.5.15

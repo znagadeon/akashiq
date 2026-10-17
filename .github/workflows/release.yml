@@ -1,6 +1,7 @@
 # Publishes one package to npm when a tag named `<package name>@<version>` is pushed, such as `akashiq@0.2.0` or `@akashiq/core@0.1.1`.
 # Authenticates with npm trusted publishing (OIDC), so no npm token is stored in the repository.
 # pnpm packs the tarball because it applies publishConfig and replaces workspace: versions; npm publishes it because it handles OIDC.
+# Then creates a GitHub release whose notes list the commits that touched the package since its previous tag.
 name: Release
 
 on:
@@ -8,7 +9,7 @@ on:
     tags: ["akashiq@*", "@akashiq/**"]
 
 permissions:
-  contents: read
+  contents: write
   id-token: write
 
 jobs:
@@ -16,6 +17,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
+        with:
+          # The release notes need the history and tags back to the package's previous release.
+          fetch-depth: 0
 
       - uses: pnpm/action-setup@v6
         with:
@@ -46,7 +50,7 @@ jobs:
             if (!dir) throw new Error(`No package named ${name} for tag ${tag}`);
             const actual = require(`./${dir}/package.json`).version;
             if (actual !== version) throw new Error(`${name} is ${actual}, but the tag is ${tag}`);
-            fs.appendFileSync(process.env.GITHUB_OUTPUT, `name=${name}\nversion=${version}\n`);
+            fs.appendFileSync(process.env.GITHUB_OUTPUT, `name=${name}\nversion=${version}\ndir=${dir}\n`);
           '
 
       - run: pnpm check
@@ -60,3 +64,10 @@ jobs:
 
       - name: Publish
         run: npm publish "$RUNNER_TEMP"/packs/*.tgz --access public
+
+      - name: Create the GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          node scripts/release-notes.ts "$GITHUB_REF_NAME" "${{ steps.package.outputs.dir }}" > "$RUNNER_TEMP/notes.md"
+          gh release create "$GITHUB_REF_NAME" --title "$GITHUB_REF_NAME" --notes-file "$RUNNER_TEMP/notes.md" --verify-tag

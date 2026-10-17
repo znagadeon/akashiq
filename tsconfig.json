@@ -12,5 +12,5 @@
     "allowJs": true,
     "checkJs": true
   },
-  "include": ["packages/*/src/**/*.ts", "packages/*/src/**/*.js", "examples/*/src/**/*.ts", "vitest.config.ts"]
+  "include": ["packages/*/src/**/*.ts", "packages/*/src/**/*.js", "examples/*/src/**/*.ts", "scripts/**/*.ts", "vitest.config.ts"]
 }

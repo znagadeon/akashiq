@@ -32,6 +32,13 @@ export const packageDecisions = {
     decision:
       "Pack releases with pnpm, which applies publishConfig to point bin and exports at the built files and replaces workspace: versions, and publish the packed tarballs; packing with npm would ship the source entry points",
   } satisfies Decision,
+  releaseNotes: {
+    decision:
+      "Write each GitHub release's notes from the subjects of the commits that touched the package since its previous tag, instead of GitHub's generated notes",
+    reason:
+      "GitHub's generated notes list merged pull requests, which this repository doesn't use, and can't tell the packages of a monorepo apart",
+    dependsOn: (): AnyDecision[] => [packageDecisions.releaseOnTag],
+  } satisfies Decision,
   releaseOnTag: {
     decision:
       "Version each package on its own, and publish a package to npm from GitHub Actions when a `<package name>@<version>` tag is pushed, authenticating with npm trusted publishing",
