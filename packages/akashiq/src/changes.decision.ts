@@ -18,6 +18,12 @@ export const changesDecisions = {
     reason: "Reading what to recheck shouldn't require opening files",
     dependsOn: (): AnyDecision[] => [changesDecisions.warnAfterCommit],
   } satisfies Decision,
+  quietNewCode: {
+    decision:
+      "Leave out the helpers of a test file the commit added, and for a decision the commit added, only name the tests that guard it",
+    reason: "Listing every helper of new code adds noise without telling anything",
+    dependsOn: (): AnyDecision[] => [changesDecisions.guardHelpers, changesDecisions.assertionCount],
+  } satisfies Decision,
   commands: {
     decision:
       "`akashiq changes` reports a range of commits, HEAD~1 to HEAD by default, and `akashiq hook install` adds it to the post-commit hook without overwriting an existing hook",

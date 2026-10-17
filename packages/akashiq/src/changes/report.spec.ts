@@ -82,6 +82,26 @@ describe("warnings after a commit", () => {
     expect(warningsFor({ "src/shipping.ts": "export const shipsFree = () => true;\n" })).toEqual([]);
   });
 
+  it("leaves out helpers in a test file the commit added, and only names the tests guarding a new decision", () => {
+    guards(changesDecisions.quietNewCode, () => {
+      const helperTest = `const threshold = 50;\nit("ships free at the threshold", () => {\n  guards(shippingDecisions.freeShippingThreshold, () => {\n    expect(shipsFree(threshold)).toBe(true);\n  });\n});\n`;
+      const newDecision = decisions("50", '\n  flatFee: { decision: "One flat fee", value: 5 } satisfies Decision<number>,');
+      const newTest = `const fee = 5;\nit("charges the flat fee", () => {\n  guards(shippingDecisions.flatFee, () => {\n    expect(quote(fee)).toBe(5);\n  });\n});\n`;
+      const warnings = warningsFor({
+        "src/threshold.test.ts": helperTest,
+        "src/shipping.decision.ts": newDecision,
+        "src/fee.test.ts": newTest,
+      });
+
+      const threshold = warnings.find((warning) => warning.id === "shippingDecisions.freeShippingThreshold");
+      expect(threshold?.guards).toEqual([{ file: "src/threshold.test.ts", line: 2, expects: { from: 0, to: 1 } }]);
+
+      const report = formatWarnings(warnings.filter((warning) => warning.id === "shippingDecisions.flatFee"));
+      expect(report).toContain("  - New decision, guarded by src/fee.test.ts:2");
+      expect(report).not.toContain("A test guarding it changed");
+    });
+  });
+
   it("prints each decision's text and reason with its warning", () => {
     guards(changesDecisions.showDecisionText, () => {
       const warnings = warningsFor({ "src/shipping.test.ts": test("    expect(shipsFree(threshold)).toBe(true);") });

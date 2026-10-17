@@ -52,9 +52,12 @@ export function collectWarnings(repository: Repository, from: string, to: string
     const after = file.newPath ? repository.show(to, file.newPath) : undefined;
 
     const expects = assertionChange(before ?? "", after ?? "");
+    // In a file the change added, every helper changed with its tests, so listing them says nothing.
+    const added = file.oldPath === undefined;
     const record = (path: string, source: string | undefined, hunks: typeof file.oldHunks) => {
       if (source === undefined) return;
       for (const range of touchedRanges(source, hunks)) {
+        if (added && range.helper) continue;
         const byPlace = guards.get(range.decision) ?? new Map<string, GuardChange>();
         guards.set(range.decision, byPlace);
         // One line per decision, file, and helper. When both sides match, the side after the change wins, since that's what the user sees now.
@@ -114,9 +117,13 @@ export function formatWarnings(warnings: DecisionWarning[]): string {
     if (entry?.decision !== undefined) lines.push(`    ${entry.decision}`);
     if (entry?.reason !== undefined) lines.push(`    Why: ${entry.reason}`);
     if (entry?.unconfirmed) lines.push("    Unconfirmed");
-    if (warning.added) lines.push("  - New decision");
+    if (warning.added) {
+      // A new decision has no earlier tests to compare with, so only say which tests guard it.
+      const tests = [...new Set(warning.guards.filter((guard) => !guard.helper).map((guard) => `${guard.file}:${guard.line}`))];
+      lines.push(`  - New decision${tests.length > 0 ? `, guarded by ${tests.join(", ")}` : ""}`);
+    }
     if (warning.removed) lines.push("  - Removed");
-    for (const guard of warning.guards) {
+    for (const guard of warning.added ? [] : warning.guards) {
       const { from, to } = guard.expects;
       const where = `${guard.file}:${guard.line}${guard.helper ? `, helper ${guard.helper}` : ""}`;
       lines.push(`  - A test guarding it changed: ${where}, expect ${from} → ${to}${to < from ? " (fewer)" : ""}`);
