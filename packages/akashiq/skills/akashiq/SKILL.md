@@ -68,6 +68,7 @@ it("ships free from exactly the threshold", () => {
 - First assert that the situation the decision covers actually happened. Without that, a changed helper or setup can leave the test green in a situation unrelated to the decision.
 - Test the policy's observable behavior, not implementation details or the value itself.
 - When a commit touches a `guards` block, tell the user which decision it guards and ask whether the decision still holds. If the commit removed assertions from the block, say which.
+- `akashiq changes` (run by the post-commit hook after `akashiq hook install`) prints these warnings, along with changed decisions and the decisions that depend on them. When you see its output after committing, show those decisions to the user as below and ask whether they still hold.
 
 When the user asks how something currently behaves, answer with a test. See [references/behavior-questions.md](references/behavior-questions.md).
 
@@ -85,4 +86,5 @@ An ID or file name alone is not enough.
 
 ## Tools
 
+- `npx akashiq changes [--from <rev>] [--to <rev>]` warns about decisions the commits in the range may have affected, HEAD~1 to HEAD by default. `npx akashiq hook install` runs it after every commit.
 - `npx akashiq dashboard [root] [--port <port>]` serves the dashboard on http://127.0.0.1:44519/ by default and reloads when decision or test files change. It flags guards that point to no decision and values that aren't literals.

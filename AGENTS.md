@@ -26,7 +26,7 @@ The skill is also the guide Akashiq ships to its users, so keep it about using A
 
 ## Verification
 
-There is no commit hook yet. The CI workflow (`.github/workflows/ci.yml`) runs the same checks on Node.js 22 and 24 for every push to `develop` and `master` and for pull requests. Before committing, run:
+Run `node packages/akashiq/src/cli.ts hook install` once in a new clone to get Akashiq's own post-commit warnings; when they appear after a commit, follow the skill and show the decisions to the user. There is no pre-commit hook. The CI workflow (`.github/workflows/ci.yml`) runs the same checks on Node.js 22 and 24 for every push to `develop` and `master` and for pull requests. Before committing, run:
 
 ```bash
 pnpm check   # type check; type-only tests are guarded here

@@ -123,6 +123,25 @@ This copies the Akashiq [Agent Skill](packages/akashiq/skills/akashiq/SKILL.md) 
 
 Run the command again after upgrading Akashiq to update the skill.
 
+### 6. Get warned after commits
+
+```bash
+npx akashiq hook install   # adds `akashiq changes` to the post-commit hook
+npx akashiq changes        # or run it yourself: HEAD~1..HEAD by default, or --from/--to
+```
+
+After each commit, Akashiq warns about decisions the commit may have affected: a test that guards a decision changed, a decision's text changed, or a value other decisions depend on changed. It counts the assertions in the guarding tests before and after, lists the decisions that depend on a changed one, and prints each decision's text and reason so you can tell at a glance whether it still holds. It never blocks the commit.
+
+```text
+⚠ shippingDecisions.freeShippingThreshold (src/shipping.decision.ts:4)
+    Orders at or above the threshold ship free
+    Why: Most orders cluster just below $50, so the threshold nudges them over
+  - A test guarding it changed: src/shipping.test.ts:10, expect 2 → 1 (fewer)
+  - Depended on by shippingDecisions.thresholdAfterDiscount (src/shipping.decision.ts:9): Compare the order total after coupons, not before, with the free shipping threshold
+```
+
+`hook install` writes to the hooks directory git uses, `core.hooksPath` included, and leaves an existing post-commit hook alone; add `npx --no-install akashiq changes` to it yourself.
+
 ## How it works
 
 Akashiq reads your source and never runs it, so it works even when the project can't build or its environment isn't set up.
@@ -138,8 +157,7 @@ See [`examples/minimal`](examples/minimal) for a complete project.
 
 Akashiq is at an early stage (0.x). It was extracted from a solo game project where it kept about 450 decisions and their tests in shape. Ideas for what comes next:
 
-- Commit hook warnings when a guarding test, a decision, or something it depends on changes
-- Change impact through `dependsOn`
+- Change impact through `dependsOn` beyond direct dependents
 - Detecting conflicts between a new requirement and existing decisions
 - QA checklists from decisions that no test guards, and policy change notes for releases
 - Optional search adapters for large projects

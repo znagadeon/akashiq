@@ -1,6 +1,6 @@
 // Finds guards(decision, …) calls in test files and the tests that wrap them.
 import ts from "typescript";
-import { lineOf, parse } from "./syntax.ts";
+import { isReference, lineOf, parse, rootName } from "./syntax.ts";
 
 export interface GuardingTest {
   /** Source text of the decision passed to guards. Matches a decision's ID. */
@@ -45,21 +45,7 @@ export function parseGuards(file: string, source: string): GuardingTest[] {
   return found;
 }
 
-/** A name or a property path such as `cartDecisions.freeShipping`. Anything else, such as an inline object, doesn't point to a decision. */
-function isReference(node: ts.Expression | undefined): node is ts.Identifier | ts.PropertyAccessExpression {
-  if (!node) return false;
-  return ts.isIdentifier(node) || (ts.isPropertyAccessExpression(node) && isReference(node.expression));
-}
-
 /** A string name as its value; other expressions, such as template literals, as source text. */
 function title(node: ts.Expression, sourceFile: ts.SourceFile): string {
   return ts.isStringLiteral(node) || ts.isNoSubstitutionTemplateLiteral(node) ? node.text : node.getText(sourceFile);
-}
-
-/** `it` for `it(…)`, `it.each(…)(…)`, and `it.only(…)`. */
-function rootName(expression: ts.Expression): string | undefined {
-  if (ts.isIdentifier(expression)) return expression.text;
-  if (ts.isPropertyAccessExpression(expression)) return rootName(expression.expression);
-  if (ts.isCallExpression(expression)) return rootName(expression.expression);
-  return undefined;
 }

@@ -123,6 +123,25 @@ Akashiq [에이전트 스킬](packages/akashiq/skills/akashiq/SKILL.md)을 프�
 
 Akashiq을 업그레이드한 뒤에는 이 명령을 다시 실행해 스킬을 갱신하세요.
 
+### 6. 커밋 후 경고 받기
+
+```bash
+npx akashiq hook install   # adds `akashiq changes` to the post-commit hook
+npx akashiq changes        # or run it yourself: HEAD~1..HEAD by default, or --from/--to
+```
+
+커밋할 때마다 Akashiq은 그 커밋이 영향을 줬을 수 있는 결정을 경고합니다. 결정을 지키는 테스트가 바뀌었거나, 결정의 글이 바뀌었거나, 다른 결정이 의존하는 값이 바뀐 경우입니다. 결정을 지키는 테스트의 단언 수를 커밋 전후로 세고, 바뀐 결정에 의존하는 결정을 함께 보여 주며, 결정마다 본문과 이유를 찍어서 그 결정이 아직 맞는지 바로 판단할 수 있게 합니다. 커밋을 막지는 않습니다.
+
+```text
+⚠ shippingDecisions.freeShippingThreshold (src/shipping.decision.ts:4)
+    Orders at or above the threshold ship free
+    Why: Most orders cluster just below $50, so the threshold nudges them over
+  - A test guarding it changed: src/shipping.test.ts:10, expect 2 → 1 (fewer)
+  - Depended on by shippingDecisions.thresholdAfterDiscount (src/shipping.decision.ts:9): Compare the order total after coupons, not before, with the free shipping threshold
+```
+
+`hook install`은 `core.hooksPath`를 포함해 git이 쓰는 hook 디렉터리에 씁니다. post-commit hook이 이미 있으면 건드리지 않으니, 거기에 `npx --no-install akashiq changes`를 직접 추가하세요.
+
 ## 동작 방식
 
 Akashiq은 소스를 읽기만 하고 실행하지 않습니다. 그래서 프로젝트가 빌드되지 않거나 개발 환경이 갖춰지지 않아도 동작합니다.
@@ -138,8 +157,7 @@ Akashiq은 소스를 읽기만 하고 실행하지 않습니다. 그래서 프�
 
 Akashiq은 초기 단계(0.x)입니다. 1인 게임 프로젝트에서 결정 약 450개와 그 테스트를 관리하던 도구를 떼어 낸 것입니다. 앞으로 생각하고 있는 것은 다음과 같습니다.
 
-- 결정을 지키는 테스트, 결정, 또는 결정의 의존성이 바뀌면 커밋 훅에서 경고
-- `dependsOn`을 따라가는 변경 영향 분석
+- 직접 의존하는 결정을 넘어 `dependsOn`을 따라가는 변경 영향 분석
 - 새 요구사항과 기존 결정 사이의 충돌 감지
 - 테스트가 지키지 않는 결정으로 만드는 QA 체크리스트, 릴리스용 정책 변경 노트
 - 큰 프로젝트를 위한 선택적 검색 어댑터

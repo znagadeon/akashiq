@@ -15,6 +15,12 @@ const decisionFiles = "**/*.decision.ts";
 const testFiles = "**/*.{spec,test}.{ts,tsx,mts,cts}";
 const ignored = (path: string) => /(^|\/)(node_modules|dist|\.git)$/.test(path);
 
+/** Whether a project-relative path is outside the directories scans skip. */
+export const isScanned = (path: string) => !/(^|\/)(node_modules|dist|\.git)\//.test(path);
+
+/** Whether a project-relative path is a decision file that scans read. */
+export const isDecisionFile = (path: string) => path.endsWith(".decision.ts") && isScanned(path);
+
 export function scanProject(root: string): ProjectScan {
   const files = (pattern: string) => globSync(pattern, { cwd: root, exclude: ignored }).sort();
   const read = (file: string) => readFileSync(join(root, file), "utf8");
