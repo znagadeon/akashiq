@@ -31,6 +31,10 @@ A policy judgment that the code alone cannot explain (a chosen value, a policy, 
 - A decision the agent made rather than the user (including going ahead with a recommended option) gets `unconfirmed: true`. Remove it once the user confirms.
 - When a decision changes, rewrite `decision` and `reason` as the single current decision. Don't append to the old text.
 
+## Showing decisions to the user
+
+Whenever you point the user to a decision (asking them to confirm it, reporting a guards block a commit touched, listing unconfirmed decisions), show its content inline so they don't have to open files: the `decision` text, the `reason` if any, and, for a guarding test, one line on what the test checks. An ID or file name alone is not enough.
+
 ## Answer behavior questions with tests
 
 When the user asks how something currently behaves ("does it work like this?"), don't answer from memory or by reading code alone. Write the claim as a test, run it, and answer from the result.
