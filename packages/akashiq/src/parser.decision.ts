@@ -13,4 +13,10 @@ export const parserDecisions = {
       "Write a decision's value as a literal in place, and have the parser flag values that reference other code such as constants, spreads, or calls",
     dependsOn: (): AnyDecision[] => [parserDecisions.staticAnalysis],
   } satisfies Decision,
+  typescriptSixParser: {
+    decision:
+      "Parse with the JavaScript API of TypeScript 6 as akashiq's own dependency, independent of the TypeScript version the project compiles with",
+    reason:
+      "Moving to another parser such as oxc costs about the same now or later, so move only once TypeScript adds syntax that TypeScript 6 can't read",
+  } satisfies Decision,
 };

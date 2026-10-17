@@ -4,6 +4,7 @@
   "description": "Remember why your code exists. Collects decisions and shows the tests that guard them.",
   "type": "module",
   "dependencies": {
-    "@akashiq/core": "workspace:*"
+    "@akashiq/core": "workspace:*",
+    "typescript": "^6.0.3"
   }
 }
