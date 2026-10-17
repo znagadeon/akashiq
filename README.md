@@ -11,7 +11,7 @@
 
 Akashiq is a decision tracing tool that remembers why your code is the way it is. It records the decisions behind your code, with their reasons, as typed objects in TypeScript, and links each one to the tests that prove it. A dashboard shows what was decided, why, and whether a test still guards it. An agent skill teaches coding agents to work the same way.
 
-The name comes from the Akashic Records, a mythical record of everything that has ever happened. The Q is for Query.
+The name comes from the Akashic Records, a mythical record of everything that has ever happened.
 
 ![The Akashiq dashboard for the minimal example](docs/dashboard.png)
 
