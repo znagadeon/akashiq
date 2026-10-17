@@ -1,0 +1,62 @@
+# Publishes one package to npm when a tag named `<package name>@<version>` is pushed, such as `akashiq@0.2.0` or `@akashiq/core@0.1.1`.
+# Authenticates with npm trusted publishing (OIDC), so no npm token is stored in the repository.
+# pnpm packs the tarball because it applies publishConfig and replaces workspace: versions; npm publishes it because it handles OIDC.
+name: Release
+
+on:
+  push:
+    tags: ["akashiq@*", "@akashiq/**"]
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 12
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Use npm with trusted publishing support
+        run: npm install --global npm@latest
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Find the package the tag names
+        id: package
+        run: |
+          node -e '
+            const fs = require("node:fs");
+            const tag = process.env.GITHUB_REF_NAME;
+            const at = tag.lastIndexOf("@");
+            const name = tag.slice(0, at);
+            const version = tag.slice(at + 1);
+            const dir = fs.readdirSync("packages")
+              .map((entry) => `packages/${entry}`)
+              .find((dir) => fs.existsSync(`${dir}/package.json`) && require(`./${dir}/package.json`).name === name);
+            if (!dir) throw new Error(`No package named ${name} for tag ${tag}`);
+            const actual = require(`./${dir}/package.json`).version;
+            if (actual !== version) throw new Error(`${name} is ${actual}, but the tag is ${tag}`);
+            fs.appendFileSync(process.env.GITHUB_OUTPUT, `name=${name}\nversion=${version}\n`);
+          '
+
+      - run: pnpm check
+      - run: pnpm test
+      - run: pnpm lint
+
+      - name: Pack
+        run: |
+          mkdir -p "$RUNNER_TEMP/packs"
+          pnpm --filter "${{ steps.package.outputs.name }}" pack --pack-destination "$RUNNER_TEMP/packs"
+
+      - name: Publish
+        run: npm publish "$RUNNER_TEMP"/packs/*.tgz --access public

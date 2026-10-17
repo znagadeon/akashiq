@@ -28,8 +28,14 @@ export const packageDecisions = {
     decision: "Keep a Korean translation of the README as README.ko.md, with README.md as the source",
     dependsOn: (): AnyDecision[] => [packageDecisions.englishSource],
   } satisfies Decision,
-  publishWithPnpm: {
+  packWithPnpm: {
     decision:
-      "Publish with pnpm, which applies publishConfig to point bin and exports at the built files and replaces workspace: versions; npm publish would ship the source entry points",
+      "Pack releases with pnpm, which applies publishConfig to point bin and exports at the built files and replaces workspace: versions, and publish the packed tarballs; packing with npm would ship the source entry points",
+  } satisfies Decision,
+  releaseOnTag: {
+    decision:
+      "Version each package on its own, and publish a package to npm from GitHub Actions when a `<package name>@<version>` tag is pushed, authenticating with npm trusted publishing",
+    reason: "Publishing on a tag is more convenient than publishing by hand, and packages such as a search adapter may be added later",
+    dependsOn: (): AnyDecision[] => [packageDecisions.packWithPnpm],
   } satisfies Decision,
 };

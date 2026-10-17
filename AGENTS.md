@@ -33,3 +33,12 @@ pnpm check   # type check; type-only tests are guarded here
 pnpm test
 pnpm lint
 ```
+
+## Releasing
+
+Packages are versioned and released one at a time.
+
+1. Bump the version in the package's `package.json` and commit.
+2. Tag that commit on `master` as `<package name>@<version>`, such as `akashiq@0.2.0` or `@akashiq/core@0.1.1`, and push the tag.
+
+The Release workflow (`.github/workflows/release.yml`) finds the package the tag names under `packages/`, checks that its version matches, runs the checks, and publishes that package through trusted publishing. Each package needs a trusted publisher set up on npmjs.com. A new package is published once by hand first (from a `pnpm pack` tarball), since its trusted publisher can only be set up once it exists. Don't publish by hand with `npm publish` from a package directory; it would ship the source entry points.
