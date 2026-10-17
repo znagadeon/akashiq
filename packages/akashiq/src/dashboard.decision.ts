@@ -9,6 +9,6 @@ export const dashboardDecisions = {
   } satisfies Decision,
   plainScript: {
     decision: "Write the dashboard UI in plain JavaScript type-checked through JSDoc, with no framework or build step",
-    unconfirmed: true,
+    reason: "Consider a framework only once the UI gets heavy enough to need one",
   } satisfies Decision,
 };
