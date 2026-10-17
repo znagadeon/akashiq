@@ -58,40 +58,51 @@ function matches(entry) {
 }
 
 /** @param {DashboardDecision[]} entries */
-const guardedCount = (entries) => `${entries.filter((entry) => entry.tests.length > 0).length} / ${entries.length}`;
+const guardedCount = (entries) => entries.filter((entry) => entry.tests.length > 0).length;
+
+/** Decision count up to which every file starts open. Larger projects start collapsed. */
+const openByDefault = 30;
+let loaded = false;
 
 function render() {
   if (!data) return;
   const { decisions, unknownGuards } = data;
   byId("project").textContent = data.project;
   document.title = `${data.project} · akashiq`;
+  if (!loaded) {
+    loaded = true;
+    if (decisions.length <= openByDefault) for (const entry of decisions) expanded.add(entry.file);
+  }
 
   byId("summary").replaceChildren(
-    summaryItem("Guarded", guardedCount(decisions)),
-    summaryItem("Unconfirmed", String(decisions.filter((entry) => entry.unconfirmed).length)),
-    summaryItem("Non-literal values", String(decisions.filter((entry) => entry.nonLiteralValue).length)),
+    summaryItem(`${guardedCount(decisions)}`, `/ ${decisions.length} guarded by tests`),
+    summaryItem(String(decisions.filter((entry) => entry.unconfirmed).length), "unconfirmed"),
+    summaryItem(String(decisions.filter((entry) => entry.nonLiteralValue).length), "non-literal values"),
   );
 
   byId("unknown").hidden = unknownGuards.length === 0;
   byId("unknown-list").replaceChildren(
-    ...unknownGuards.map((test) =>
-      h("li", {}, h("code", {}, test.decision), ` ${test.name} `, h("span", { class: "path" }, `${test.file}:${test.line}`)),
-    ),
+    ...unknownGuards.map((test) => h("li", {}, h("code", {}, test.decision), ` in ${test.name} `, location(test.file, test.line))),
   );
 
   const shown = decisions.filter(matches);
-  byId("count").textContent = `${shown.length} shown`;
+  byId("count").textContent = shown.length === decisions.length ? "" : `${shown.length} of ${decisions.length}`;
   const files = [...new Set(shown.map((entry) => entry.file))];
   byId("files").replaceChildren(
     ...(files.length === 0
-      ? [h("p", { class: "muted" }, decisions.length === 0 ? "No *.decision.ts files found." : "No decisions match.")]
+      ? [h("p", { class: "empty" }, decisions.length === 0 ? "No *.decision.ts files found." : "No decisions match.")]
       : []),
     ...files.map((file) => {
       const entries = shown.filter((entry) => entry.file === file);
       const section = h(
         "details",
         { class: "file" },
-        h("summary", {}, h("h2", {}, file, " ", h("span", { class: "count" }, guardedCount(entries)))),
+        h(
+          "summary",
+          {},
+          h("h2", {}, ...breakable(file)),
+          h("span", { class: "file-count" }, `${guardedCount(entries)} / ${entries.length} guarded`),
+        ),
         ...entries.map(decisionRow),
       );
       /** @type {HTMLDetailsElement} */ (section).open = expanded.has(file);
@@ -104,8 +115,14 @@ function render() {
   );
 }
 
-/** @param {string} label @param {string} value */
-const summaryItem = (label, value) => h("div", {}, h("dt", {}, label), h("dd", {}, value));
+/** A path that wraps after slashes rather than mid-name on narrow screens. @param {string} path */
+const breakable = (path) => path.split("/").flatMap((part, index) => (index === 0 ? [part] : ["/", document.createElement("wbr"), part]));
+
+/** @param {string} value @param {string} label */
+const summaryItem = (value, label) => h("div", {}, h("dd", {}, value), h("dt", {}, label));
+
+/** The file name and line, with the full path on hover. @param {string} file @param {number} line */
+const location = (file, line) => h("span", { class: "path", title: `${file}:${line}` }, `${file.split("/").pop()}:${line}`);
 
 /** @param {DashboardDecision} entry */
 function decisionRow(entry) {
@@ -114,35 +131,33 @@ function decisionRow(entry) {
     "article",
     { class: "entry", id: entry.id },
     h(
-      "header",
-      { class: "entry-head" },
-      h("code", { class: "id" }, entry.id),
-      entry.unconfirmed &&
-        h("span", { class: "badge badge-unconfirmed", title: "An agent made this decision; the user hasn't confirmed it" }, "unconfirmed"),
+      "div",
+      { class: "entry-meta" },
+      h("code", { class: "id", title: `${entry.file}:${entry.line}` }, entry.id),
+      entry.unconfirmed && h("span", { class: "badge", title: "An agent made this decision; the user hasn't confirmed it" }, "unconfirmed"),
       entry.nonLiteralValue &&
         h(
           "span",
-          { class: "badge badge-warning", title: "The value refers to other code, so its text doesn't show the actual value" },
+          { class: "badge", title: "The value refers to other code, so its text doesn't show the actual value" },
           "non-literal value",
         ),
-      h("span", { class: tests > 0 ? "tests tests-ok" : "tests" }, tests > 0 ? `${tests} ${tests === 1 ? "test" : "tests"}` : "no tests"),
-      h("span", { class: "path" }, `${entry.file}:${entry.line}`),
+      h(
+        "span",
+        { class: tests > 0 ? "status status-ok" : "status" },
+        tests > 0 ? `${tests} ${tests === 1 ? "test" : "tests"}` : "no tests",
+      ),
     ),
-    h(
-      "div",
-      { class: "detail" },
-      entry.decision !== undefined && h("p", { class: "decision" }, entry.decision),
-      entry.reason !== undefined && h("p", { class: "reason" }, h("span", { class: "label" }, "Reason"), entry.reason),
-      entry.value !== undefined && h("pre", { class: "value" }, entry.value),
-      links("Relies on", entry.dependsOn),
-      links("Relied on by", entry.referrers),
-      tests > 0 &&
-        h(
-          "ul",
-          { class: "test-list" },
-          ...entry.tests.map((test) => h("li", {}, `${test.name} `, h("span", { class: "path" }, `${test.file}:${test.line}`))),
-        ),
-    ),
+    entry.decision !== undefined && h("p", { class: "decision" }, entry.decision),
+    entry.reason !== undefined && h("p", { class: "reason" }, h("span", { class: "label" }, "Why"), entry.reason),
+    entry.value !== undefined && h("pre", { class: "value" }, entry.value),
+    links("Relies on", entry.dependsOn),
+    links("Relied on by", entry.referrers),
+    tests > 0 &&
+      h(
+        "ul",
+        { class: "test-list" },
+        ...entry.tests.map((test) => h("li", {}, h("span", { class: "test-name" }, test.name), location(test.file, test.line))),
+      ),
   );
 }
 
@@ -153,7 +168,7 @@ function links(label, ids) {
     "p",
     { class: "links" },
     h("span", { class: "label" }, label),
-    ...ids.map((id) => h("button", { type: "button", class: "link", onClick: () => jump(id) }, id)),
+    ...ids.map((id) => h("button", { type: "button", class: "chip", onClick: () => jump(id) }, id)),
   );
 }
 

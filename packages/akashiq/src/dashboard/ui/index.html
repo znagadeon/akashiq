@@ -9,12 +9,11 @@
 <body>
   <main class="page">
     <header class="header">
-      <h1>Decisions <span id="project" class="muted"></span></h1>
+      <h1><span id="project"></span> <span class="muted">decisions</span></h1>
       <span id="live" class="live" title="Reloads when decision or test files change">connecting…</span>
     </header>
 
     <dl id="summary" class="summary"></dl>
-    <p class="note">Guarded: decisions with a test that wraps its body in guards(decision, …)</p>
 
     <div class="filters">
       <input id="query" type="search" placeholder="Search IDs, decisions, reasons, values" aria-label="Search">
@@ -28,8 +27,8 @@
         <option value="unconfirmed">Unconfirmed only</option>
       </select>
       <span id="count" class="count"></span>
-      <button id="expand" type="button">Expand all</button>
-      <button id="collapse" type="button">Collapse all</button>
+      <button id="expand" type="button" class="text-button">Expand all</button>
+      <button id="collapse" type="button" class="text-button">Collapse all</button>
     </div>
 
     <pre id="error" class="error" hidden></pre>
@@ -37,7 +36,7 @@
       <h2>guards with no matching decision</h2>
       <ul id="unknown-list"></ul>
     </section>
-    <div id="files"><p class="muted">Loading…</p></div>
+    <div id="files"><p class="empty">Loading…</p></div>
   </main>
   <script type="module" src="/app.js"></script>
 </body>
