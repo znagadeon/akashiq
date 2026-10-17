@@ -1,7 +1,7 @@
 import { guards } from "@akashiq/core";
 import { describe, expect, it } from "vitest";
 import { packageDecisions } from "../packages/akashiq/src/package.decision.ts";
-import { previousTag, releaseNotes } from "./release-notes.ts";
+import { isVersionBumpOnly, previousTag, releaseNotes } from "./release-notes.ts";
 
 describe("release notes", () => {
   it("list the commits that touched the package since its previous tag, with links to npm and the comparison", () => {
@@ -34,6 +34,20 @@ describe("release notes", () => {
     const notes = releaseNotes({ name: "akashiq", version: "0.1.0", commits: [], repository: "owner/akashiq" });
     expect(notes).toContain("- No changes to this package");
     expect(notes).not.toContain("Compare");
+  });
+
+  it("leave out commits that only change the package version", () => {
+    guards(packageDecisions.releaseNotes, () => {
+      const diff = (file: string, ...lines: string[]) =>
+        [`diff --git a/${file} b/${file}`, "index 1..2 100644", `--- a/${file}`, `+++ b/${file}`, "@@ -3 +3 @@", ...lines].join("\n");
+      const bump = diff("packages/akashiq/package.json", '-  "version": "0.1.1",', '+  "version": "0.2.0",');
+      expect(isVersionBumpOnly(bump)).toBe(true);
+      expect(isVersionBumpOnly(`${bump}\n${diff("packages/akashiq/package.json", '-    "node": ">=22"', '+    "node": ">=22.17"')}`)).toBe(
+        false,
+      );
+      expect(isVersionBumpOnly(`${bump}\n${diff("packages/akashiq/README.md", "-old", "+new")}`)).toBe(false);
+      expect(isVersionBumpOnly("")).toBe(false);
+    });
   });
 
   it("take the newest tag of the same package other than the one being released", () => {

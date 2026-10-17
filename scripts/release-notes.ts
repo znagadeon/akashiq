@@ -31,6 +31,22 @@ export function releaseNotes({ name, version, previous, commits, repository }: R
   return [previous ? `Changes since ${previous}:` : "Changes:", "", ...lines, "", links.join(" · "), ""].join("\n");
 }
 
+/**
+ * Whether a commit's diff, limited to the package directory, only changes the "version" field of package.json files.
+ * Such a commit says nothing beyond the release itself, whatever its subject.
+ */
+export function isVersionBumpOnly(diff: string): boolean {
+  const lines = diff.split("\n");
+  const files = lines.filter((line) => line.startsWith("diff --git "));
+  const changes = lines.filter((line) => /^[+-]/.test(line) && !/^(\+\+\+|---) /.test(line));
+  return (
+    files.length > 0 &&
+    files.every((line) => line.endsWith("/package.json")) &&
+    changes.length > 0 &&
+    changes.every((line) => /^[+-]\s*"version":\s*"[^"]*",?\s*$/.test(line))
+  );
+}
+
 /** The latest tag of the same package that the tag's commit contains, other than the tag itself. */
 export function previousTag(tags: string[], tag: string): string | undefined {
   return tags.find((candidate) => candidate !== tag);
@@ -51,7 +67,8 @@ if (import.meta.main) {
     .map((line) => {
       const [hash = "", ...subject] = line.split("\t");
       return { hash, subject: subject.join("\t") };
-    });
+    })
+    .filter((commit) => !isVersionBumpOnly(git("show", "--format=", "--unified=0", commit.hash, "--", directory)));
   const repository = process.env.GITHUB_REPOSITORY ?? "znagadeon/akashiq";
   process.stdout.write(releaseNotes({ name, version: tag.slice(at + 1), previous, commits, repository }));
 }

@@ -34,7 +34,7 @@ export const packageDecisions = {
   } satisfies Decision,
   releaseNotes: {
     decision:
-      "Write each GitHub release's notes from the subjects of the commits that touched the package since its previous tag, instead of GitHub's generated notes",
+      "Write each GitHub release's notes from the subjects of the commits that touched the package since its previous tag, leaving out commits that only change its version, instead of GitHub's generated notes",
     reason:
       "GitHub's generated notes list merged pull requests, which this repository doesn't use, and can't tell the packages of a monorepo apart",
     dependsOn: (): AnyDecision[] => [packageDecisions.releaseOnTag],
