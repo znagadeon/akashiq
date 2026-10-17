@@ -4,6 +4,7 @@ import { type FSWatcher, readFileSync, watch } from "node:fs";
 import { createServer, type ServerResponse } from "node:http";
 import type { AddressInfo } from "node:net";
 import { basename } from "node:path";
+import { dashboardDecisions } from "../dashboard.decision.ts";
 import { scanProject } from "../parser/project.ts";
 import { dashboardData } from "./data.ts";
 
@@ -23,7 +24,7 @@ export interface Dashboard {
 }
 
 /** Starts the dashboard for the project at root. Listens on localhost only. Port 0 picks a free port. */
-export async function startDashboard(root: string, port = 7357): Promise<Dashboard> {
+export async function startDashboard(root: string, port = dashboardDecisions.defaultPort.value): Promise<Dashboard> {
   const clients = new Set<ServerResponse>();
   const server = createServer((request, response) => {
     const path = new URL(request.url ?? "/", "http://localhost").pathname;

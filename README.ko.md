@@ -101,10 +101,11 @@ it("charges shipping when a coupon brings the total below the threshold", () => 
 ### 4. 대시보드 열기
 
 ```bash
-npx akashiq dashboard
+npx akashiq dashboard              # http://127.0.0.1:44519/
+npx akashiq dashboard --port 8080  # another port; 0 picks a free one
 ```
 
-http://127.0.0.1:7357/ 에 대시보드를 띄우고, 결정 파일이나 테스트 파일이 바뀔 때마다 다시 불러옵니다. 결정을 검색하고, 테스트가 없거나 아직 확인하지 않은 결정만 골라 보고, `dependsOn` 관계를 양쪽 방향으로 따라갈 수 있습니다. 어떤 결정도 가리키지 않는 `guards` 호출과 리터럴이 아닌 값도 표시합니다.
+localhost에 대시보드를 띄우고, 결정 파일이나 테스트 파일이 바뀔 때마다 다시 불러옵니다. 결정을 검색하고, 테스트가 없거나 아직 확인하지 않은 결정만 골라 보고, `dependsOn` 관계를 양쪽 방향으로 따라갈 수 있습니다. 어떤 결정도 가리키지 않는 `guards` 호출과 리터럴이 아닌 값도 표시합니다.
 
 ### 5. 에이전트에게 가르치기
 

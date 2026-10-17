@@ -85,4 +85,4 @@ An ID or file name alone is not enough.
 
 ## Tools
 
-- `npx akashiq dashboard [root]` serves the dashboard on http://127.0.0.1:7357/ and reloads when decision or test files change. It flags guards that point to no decision and values that aren't literals.
+- `npx akashiq dashboard [root] [--port <port>]` serves the dashboard on http://127.0.0.1:44519/ by default and reloads when decision or test files change. It flags guards that point to no decision and values that aren't literals.

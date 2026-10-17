@@ -101,10 +101,11 @@ it("charges shipping when a coupon brings the total below the threshold", () => 
 ### 4. Open the dashboard
 
 ```bash
-npx akashiq dashboard
+npx akashiq dashboard              # http://127.0.0.1:44519/
+npx akashiq dashboard --port 8080  # another port; 0 picks a free one
 ```
 
-It serves the dashboard on http://127.0.0.1:7357/ and reloads whenever a decision or test file changes. You can search decisions, filter those without tests or not yet confirmed, and follow `dependsOn` links both ways. It also flags `guards` calls that point to no decision and values that aren't literals.
+It serves the dashboard on localhost and reloads whenever a decision or test file changes. You can search decisions, filter those without tests or not yet confirmed, and follow `dependsOn` links both ways. It also flags `guards` calls that point to no decision and values that aren't literals.
 
 ### 5. Teach your agent
 

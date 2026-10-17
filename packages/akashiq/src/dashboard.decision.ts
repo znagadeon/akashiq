@@ -11,4 +11,8 @@ export const dashboardDecisions = {
     decision: "Write the dashboard UI in plain JavaScript type-checked through JSDoc, with no framework or build step",
     reason: "Consider a framework only once the UI gets heavy enough to need one",
   } satisfies Decision,
+  defaultPort: {
+    decision: "Serve the dashboard on a fixed default port that spells akashiq in leet (AkAShIQ), unless --port is given",
+    value: 44519,
+  } satisfies Decision<number>,
 };

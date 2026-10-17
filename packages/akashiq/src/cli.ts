@@ -2,6 +2,7 @@
 import { resolve } from "node:path";
 import { parseArgs } from "node:util";
 import { startDashboard } from "./dashboard/server.ts";
+import { dashboardDecisions } from "./dashboard.decision.ts";
 import { defaultSkillDirectories, installSkill } from "./skill/install.ts";
 
 const usage = `Usage:
@@ -10,6 +11,7 @@ const usage = `Usage:
 
 Commands:
   dashboard       Serve the decision dashboard for the project at root (default: .)
+                  on --port (default: ${dashboardDecisions.defaultPort.value}; 0 picks a free port)
   skill install   Copy the Akashiq agent skill into root (default: .) under each --dir
                   (default: ${defaultSkillDirectories.join(", ")}). Use --dir .claude/skills for Claude Code.`;
 
