@@ -18,6 +18,7 @@ A policy judgment that the code alone cannot explain (a chosen value, a policy, 
 
 - Declare each decision as a `Decision`. If code reads a value from it, declare it as `Decision<ValueType>` and put the value in `value`. The type is in `packages/core/src/types.ts`.
 - Export decisions as an object named `xxxDecisions`. Its key path, such as `coreDecisions.separateAnyDecision`, is the decision's ID.
+- Write `value` as a literal in place. akashiq reads decisions without running them, so a value that references a constant, spreads another object, or calls a function can't be shown or tracked. `as` and `satisfies` are fine.
 - One decision holds one thing. If something was decided separately per place or item, make separate decisions.
 - `decision` says what was decided in one or two sentences. Tests guard the detailed behavior.
 - `reason` says only why. Alternatives considered and history go in the commit message.
