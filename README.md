@@ -33,7 +33,7 @@ This is requirements traceability, applied to AI-driven development and kept ins
 npm install --save-dev akashiq @akashiq/core
 ```
 
-`@akashiq/core` holds the `Decision` types and `guards`, and has no dependencies. `akashiq` holds the dashboard, the CLI, and the agent skill. Both can be dev dependencies: decision files import only types, and `guards` is used only in tests.
+`@akashiq/core` holds the `Decision` types and `guards`, and has no dependencies. `akashiq` holds the dashboard, the CLI, and the agent skill, and needs Node.js 22 or later. Both can be dev dependencies: decision files import only types, and `guards` is used only in tests.
 
 ## Usage
 

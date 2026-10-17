@@ -33,7 +33,7 @@ Akashiq은 모든 것을 기억하려 하지 않습니다. 잊어버리면 안 �
 npm install --save-dev akashiq @akashiq/core
 ```
 
-`@akashiq/core`에는 `Decision` 타입과 `guards`가 있고, 다른 패키지에 의존하지 않습니다. `akashiq`에는 대시보드, CLI, 에이전트 스킬이 있습니다. 결정 파일은 타입만 가져오고 `guards`는 테스트에서만 쓰기 때문에, 둘 다 devDependency로 설치하면 됩니다.
+`@akashiq/core`에는 `Decision` 타입과 `guards`가 있고, 다른 패키지에 의존하지 않습니다. `akashiq`에는 대시보드, CLI, 에이전트 스킬이 있고, Node.js 22 이상이 필요합니다. 결정 파일은 타입만 가져오고 `guards`는 테스트에서만 쓰기 때문에, 둘 다 devDependency로 설치하면 됩니다.
 
 ## 사용법
 
