@@ -6,5 +6,8 @@
   "dependencies": {
     "@akashiq/core": "workspace:*",
     "typescript": "^6.0.3"
+  },
+  "bin": {
+    "akashiq": "./src/cli.ts"
   }
 }

@@ -8,7 +8,9 @@
     "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true,
     "noEmit": true,
-    "rewriteRelativeImportExtensions": true
+    "rewriteRelativeImportExtensions": true,
+    "allowJs": true,
+    "checkJs": true
   },
-  "include": ["packages/*/src/**/*.ts", "vitest.config.ts"]
+  "include": ["packages/*/src/**/*.ts", "packages/*/src/**/*.js", "vitest.config.ts"]
 }

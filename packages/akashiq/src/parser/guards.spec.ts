@@ -21,4 +21,8 @@ describe("parseGuards", () => {
     const source = 'it.each([1])("case %i", () => guards(fooDecisions.a, () => {}));';
     expect(parseGuards("b.spec.ts", source)).toEqual([{ decision: "fooDecisions.a", file: "b.spec.ts", line: 1, name: "case %i" }]);
   });
+
+  it("skips guards given something other than a decision reference, such as an inline object", () => {
+    expect(parseGuards("c.spec.ts", 'it("runs", () => guards({ decision: "inline" }, () => 1));')).toEqual([]);
+  });
 });

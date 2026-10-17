@@ -14,6 +14,9 @@ importers:
       '@types/node':
         specifier: ^26.6.5
         version: 26.6.5
+      akashiq:
+        specifier: workspace:*
+        version: link:packages/akashiq
       typescript:
         specifier: ^7.0.2
         version: 7.0.2

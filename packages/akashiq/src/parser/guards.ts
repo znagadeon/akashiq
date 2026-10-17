@@ -16,7 +16,12 @@ export function parseGuards(file: string, source: string): GuardingTest[] {
   const sourceFile = parse(file, source);
   const found: GuardingTest[] = [];
   const visit = (node: ts.Node) => {
-    if (ts.isCallExpression(node) && ts.isIdentifier(node.expression) && node.expression.text === "guards" && node.arguments[0]) {
+    if (
+      ts.isCallExpression(node) &&
+      ts.isIdentifier(node.expression) &&
+      node.expression.text === "guards" &&
+      isReference(node.arguments[0])
+    ) {
       const names: string[] = [];
       let test: ts.Node | undefined;
       for (let current = node.parent; current; current = current.parent) {
@@ -38,6 +43,12 @@ export function parseGuards(file: string, source: string): GuardingTest[] {
   };
   visit(sourceFile);
   return found;
+}
+
+/** A name or a property path such as `cartDecisions.freeShipping`. Anything else, such as an inline object, doesn't point to a decision. */
+function isReference(node: ts.Expression | undefined): node is ts.Identifier | ts.PropertyAccessExpression {
+  if (!node) return false;
+  return ts.isIdentifier(node) || (ts.isPropertyAccessExpression(node) && isReference(node.expression));
 }
 
 /** A string name as its value; other expressions, such as template literals, as source text. */
