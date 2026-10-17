@@ -12,6 +12,8 @@ If `AGENTS.local.md` exists, read it and follow it too. It holds the current dev
 
 Everything in the repository is written in English: source code, comments, tests, decisions (`decision` and `reason`), package metadata, and this file. Commit messages are in English too.
 
+The one exception is `README.ko.md`, a Korean translation of `README.md`. `README.md` is the source: when you change it, update `README.ko.md` to match in the same commit.
+
 ## Imports
 
 Write relative imports with the `.ts` extension (`./types.ts`). The compiler rewrites them to `.js` on build, and Node runs the sources directly.

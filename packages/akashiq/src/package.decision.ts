@@ -24,4 +24,8 @@ export const packageDecisions = {
     reason: "The package and the command share a name, so `npx akashiq` runs it directly",
     dependsOn: (): AnyDecision[] => [packageDecisions.splitCore, skillDecisions.shipAsSkill],
   } satisfies Decision,
+  koreanReadme: {
+    decision: "Keep a Korean translation of the README as README.ko.md, with README.md as the source",
+    dependsOn: (): AnyDecision[] => [packageDecisions.englishSource],
+  } satisfies Decision,
 };
