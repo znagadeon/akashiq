@@ -1,4 +1,5 @@
-import type { Decision } from "@akashiq/core";
+import type { AnyDecision, Decision } from "@akashiq/core";
+import { skillDecisions } from "./skill.decision.ts";
 
 export const packageDecisions = {
   splitCore: {
@@ -17,5 +18,10 @@ export const packageDecisions = {
   } satisfies Decision,
   productName: {
     decision: "Call the product Akashiq in prose, and keep packages, the command, and the skill lowercase as akashiq",
+  } satisfies Decision,
+  unscopedCli: {
+    decision: "Publish the CLI package unscoped as akashiq, with the skill inside it, rather than under the @akashiq scope",
+    reason: "The package and the command share a name, so `npx akashiq` runs it directly",
+    dependsOn: (): AnyDecision[] => [packageDecisions.splitCore, skillDecisions.shipAsSkill],
   } satisfies Decision,
 };

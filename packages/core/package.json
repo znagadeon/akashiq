@@ -3,6 +3,15 @@
   "version": "0.0.0",
   "description": "Decision types and guards for recording why your code exists and linking it to tests.",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/znagadeon/akashiq.git",
+    "directory": "packages/core"
+  },
+  "homepage": "https://github.com/znagadeon/akashiq#readme",
+  "bugs": {
+    "url": "https://github.com/znagadeon/akashiq/issues"
+  },
   "type": "module",
   "exports": {
     ".": "./src/index.ts"
