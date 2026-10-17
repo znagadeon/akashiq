@@ -12,6 +12,10 @@ If `AGENTS.local.md` exists, read it and follow it too. It holds the current dev
 
 Everything in the repository is written in English: source code, comments, tests, decisions (`decision` and `reason`), package metadata, and this file. Commit messages are in English too.
 
+## Imports
+
+Write relative imports with the `.ts` extension (`./types.ts`). The compiler rewrites them to `.js` on build, and Node runs the sources directly.
+
 ## Decisions live in `*.decision.ts`
 
 A policy judgment that the code alone cannot explain (a chosen value, a policy, an exception, a design trade-off) is not written straight into code. Record it with its reason in a `*.decision.ts` file next to the code it concerns, and let the code read it.

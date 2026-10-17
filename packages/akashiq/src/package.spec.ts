@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { guards } from "@akashiq/core";
 import { describe, expect, it } from "vitest";
-import { packageDecisions } from "./package.decision.js";
+import { packageDecisions } from "./package.decision.ts";
 
 const root = new URL("../../../", import.meta.url);
 const read = (path: string) => readFileSync(new URL(path, root), "utf8");

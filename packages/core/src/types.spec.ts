@@ -1,7 +1,7 @@
 import { describe, expectTypeOf, it } from "vitest";
-import { coreDecisions } from "./core.decision.js";
-import { guards } from "./guards.js";
-import type { AnyDecision, Decision } from "./types.js";
+import { coreDecisions } from "./core.decision.ts";
+import { guards } from "./guards.ts";
+import type { AnyDecision, Decision } from "./types.ts";
 
 // These check types only, so the type check (pnpm check) is what actually guards them. It fails once an @ts-expect-error no longer meets an error.
 describe("Decision", () => {

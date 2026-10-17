@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { guards } from "./guards.js";
+import { guards } from "./guards.ts";
 
 describe("guards", () => {
   it("runs the body and returns its result", () => {

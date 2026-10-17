@@ -1,5 +1,5 @@
 // Relations between decisions. If A lists B in dependsOn, A relies on B, and A should be revisited when B changes.
-import type { DecisionEntry } from "./decisions.js";
+import type { DecisionEntry } from "./decisions.ts";
 
 /** Decision IDs written as `xxxDecisions.key` in text, each once, in order of appearance. */
 export function referencedIds(text: string): string[] {

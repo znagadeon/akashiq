@@ -1,4 +1,4 @@
-import type { Decision } from "./types.js";
+import type { Decision } from "./types.ts";
 
 export const coreDecisions = {
   separateAnyDecision: {

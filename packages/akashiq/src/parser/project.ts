@@ -1,8 +1,8 @@
 // Scans a project for decisions and the tests that guard them. Reads files only; never runs project code.
 import { globSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import { type DecisionEntry, parseDecisions } from "./decisions.js";
-import { type GuardingTest, parseGuards } from "./guards.js";
+import { type DecisionEntry, parseDecisions } from "./decisions.ts";
+import { type GuardingTest, parseGuards } from "./guards.ts";
 
 export interface ProjectScan {
   decisions: DecisionEntry[];

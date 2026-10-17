@@ -1,7 +1,7 @@
 import { guards } from "@akashiq/core";
 import { describe, expect, it } from "vitest";
-import { parserDecisions } from "../parser.decision.js";
-import { parseDecisions } from "./decisions.js";
+import { parserDecisions } from "../parser.decision.ts";
+import { parseDecisions } from "./decisions.ts";
 
 const lines = (...source: string[]) => source.join("\n");
 

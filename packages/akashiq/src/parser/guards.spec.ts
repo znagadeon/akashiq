@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseGuards } from "./guards.js";
+import { parseGuards } from "./guards.ts";
 
 describe("parseGuards", () => {
   it("finds the describe path and the line of the test around guards", () => {

@@ -1,4 +1,4 @@
-import type { AnyDecision } from "./types.js";
+import type { AnyDecision } from "./types.ts";
 
 /**
  * Marks a test body as guarding this decision. akashiq uses the mark to find, for each decision, the tests that guard it. It only runs the body; the decision is an ID that follows the test even if the test is moved or renamed.

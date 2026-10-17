@@ -1,6 +1,6 @@
 // Reads decisions from the source of a *.decision.ts file without running it.
 import ts from "typescript";
-import { lineOf, parse, propertyName, unwrap } from "./syntax.js";
+import { lineOf, parse, propertyName, unwrap } from "./syntax.ts";
 
 export interface DecisionEntry {
   /** Key path from the exported object, such as `coreDecisions.separateAnyDecision`. Tests pass the same expression to guards. */

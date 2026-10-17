@@ -3,9 +3,9 @@ import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { guards } from "@akashiq/core";
 import { afterEach, describe, expect, it } from "vitest";
-import { parserDecisions } from "../parser.decision.js";
-import { parseDecisions } from "./decisions.js";
-import { scanProject } from "./project.js";
+import { parserDecisions } from "../parser.decision.ts";
+import { parseDecisions } from "./decisions.ts";
+import { scanProject } from "./project.ts";
 
 let root: string | undefined;
 afterEach(() => {
@@ -47,7 +47,7 @@ describe("scanProject", () => {
       const scan = scanProject(
         project({
           "src/broken.decision.ts": [
-            'import { missing } from "./does-not-exist.js";',
+            'import { missing } from "./does-not-exist.ts";',
             'throw new Error("this file must not run");',
             'export const brokenDecisions = { a: { decision: "Still readable", value: 1 } };',
           ].join("\n"),

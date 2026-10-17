@@ -1,7 +1,7 @@
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
-import { scanProject } from "./project.js";
-import { missingDependencies, referencedIds, referrersOf } from "./references.js";
+import { scanProject } from "./project.ts";
+import { missingDependencies, referencedIds, referrersOf } from "./references.ts";
 
 const decision = (id: string, text: string, dependsOn: string[] = []) => ({ id, decision: text, dependsOn });
 

@@ -1,6 +1,6 @@
 // Finds guards(decision, …) calls in test files and the tests that wrap them.
 import ts from "typescript";
-import { lineOf, parse } from "./syntax.js";
+import { lineOf, parse } from "./syntax.ts";
 
 export interface GuardingTest {
   /** Source text of the decision passed to guards. Matches a decision's ID. */
