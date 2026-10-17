@@ -157,6 +157,7 @@ See [`examples/minimal`](examples/minimal) for a complete project.
 
 Akashiq is at an early stage (0.x). It was extracted from a solo game project where it kept about 450 decisions and their tests in shape. Ideas for what comes next:
 
+- Paths to skip when scanning, for monorepos that keep examples or fixtures with their own decisions next to the packages
 - Change impact through `dependsOn` beyond direct dependents
 - Detecting conflicts between a new requirement and existing decisions
 - QA checklists from decisions that no test guards, and policy change notes for releases
