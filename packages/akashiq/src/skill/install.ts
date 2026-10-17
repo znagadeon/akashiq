@@ -1,4 +1,4 @@
-// Copies the akashiq skill shipped with this package into a project, so agents working there can load it.
+// Copies the Akashiq skill shipped with this package into a project, so agents working there can load it.
 import { cpSync, existsSync, rmSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";

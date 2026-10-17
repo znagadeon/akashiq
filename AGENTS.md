@@ -1,6 +1,6 @@
 # AGENTS.md
 
-akashiq records why code exists as typed decisions and links each decision to the tests that guard it. This repository is developed with akashiq itself.
+Akashiq records why code exists as typed decisions and links each decision to the tests that guard it. This repository is developed with Akashiq itself.
 
 ## Local instructions
 
@@ -18,9 +18,9 @@ Write relative imports with the `.ts` extension (`./types.ts`). The compiler rew
 
 ## Decisions and tests
 
-Follow the akashiq skill for recording decisions, guarding them with tests, checking for conflicts before changing a policy, answering behavior questions with tests, and showing decisions to the user. Its source is `packages/akashiq/skills/akashiq/SKILL.md`; `.claude/skills/akashiq` and `.agents/skills/akashiq` link to it, so editing the source updates what agents load here. Read it before working on decisions or tests if your agent hasn't loaded it.
+Follow the Akashiq skill for recording decisions, guarding them with tests, checking for conflicts before changing a policy, answering behavior questions with tests, and showing decisions to the user. Its source is `packages/akashiq/skills/akashiq/SKILL.md`; `.claude/skills/akashiq` and `.agents/skills/akashiq` link to it, so editing the source updates what agents load here. Read it before working on decisions or tests if your agent hasn't loaded it.
 
-The skill is also the guide akashiq ships to its users, so keep it about using akashiq in any project. Rules that apply only to this repository belong in this file.
+The skill is also the guide Akashiq ships to its users, so keep it about using Akashiq in any project. Rules that apply only to this repository belong in this file.
 
 ## Verification
 

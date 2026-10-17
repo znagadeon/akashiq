@@ -6,13 +6,16 @@ export const packageDecisions = {
   } satisfies Decision,
   englishSource: {
     decision: "Write source code, comments, tests, decisions, package metadata, and AGENTS.md in English",
-    reason: "akashiq is meant to be distributed worldwide",
+    reason: "Akashiq is meant to be distributed worldwide",
   } satisfies Decision,
   tsImportExtensions: {
     decision: "Write relative imports with the .ts extension and let the compiler rewrite them to .js",
     reason: "Imports match the actual file names, and Node can run the sources directly without a build",
   } satisfies Decision,
   mitLicense: {
-    decision: "License akashiq under MIT",
+    decision: "License Akashiq under MIT",
+  } satisfies Decision,
+  productName: {
+    decision: "Call the product Akashiq in prose, and keep packages, the command, and the skill lowercase as akashiq",
   } satisfies Decision,
 };

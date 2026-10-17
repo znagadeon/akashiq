@@ -2,7 +2,7 @@ import type { Decision } from "@akashiq/core";
 
 export const dashboardDecisions = {
   staticFiles: {
-    decision: "Serve the dashboard as static files shipped with akashiq, and the project scan as JSON",
+    decision: "Serve the dashboard as static files shipped with Akashiq, and the project scan as JSON",
   } satisfies Decision,
   liveData: {
     decision: "Watch the project and tell the open dashboard to reload its data when decision or test files change",

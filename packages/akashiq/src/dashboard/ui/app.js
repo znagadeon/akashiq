@@ -68,7 +68,7 @@ function render() {
   if (!data) return;
   const { decisions, unknownGuards } = data;
   byId("project").textContent = data.project;
-  document.title = `${data.project} · akashiq`;
+  document.title = `${data.project} · Akashiq`;
   if (!loaded) {
     loaded = true;
     if (decisions.length <= openByDefault) for (const entry of decisions) expanded.add(entry.file);

@@ -3,9 +3,9 @@ name: akashiq
 description: Record policy decisions as typed Decision objects in *.decision.ts files and guard them with tests through guards(). Use when a change sets or alters a value, policy, or exception that the code alone can't explain; before adding or changing such a policy; when the user asks how something currently behaves; and when a commit touches a guards(…) block or a *.decision.ts file.
 ---
 
-# akashiq
+# Akashiq
 
-akashiq keeps the reasons behind code from getting lost. A policy judgment is recorded as a `Decision` with its reason, code reads its value from there, and tests that prove it wrap their body in `guards(decision, …)`. `akashiq dashboard` shows every decision, why it was made, and which tests guard it.
+Akashiq keeps the reasons behind code from getting lost. A policy judgment is recorded as a `Decision` with its reason, code reads its value from there, and tests that prove it wrap their body in `guards(decision, …)`. `akashiq dashboard` shows every decision, why it was made, and which tests guard it.
 
 ## What counts as a decision
 
@@ -31,9 +31,9 @@ export const shippingDecisions = {
 };
 ```
 
-- Export decisions as an object named `xxxDecisions`. The key path, such as `shippingDecisions.freeShippingThreshold`, is the decision's ID. akashiq finds `*.decision.ts` files anywhere in the project.
+- Export decisions as an object named `xxxDecisions`. The key path, such as `shippingDecisions.freeShippingThreshold`, is the decision's ID. Akashiq finds `*.decision.ts` files anywhere in the project.
 - If code reads a value, declare `Decision<ValueType>` and put it in `value`. Otherwise declare `Decision`, which forbids `value`.
-- Write `value` as a literal in place. akashiq reads decisions without running them, so a value that refers to a constant, spreads another object, or calls a function can't be shown or tracked. `as` and `satisfies` are fine.
+- Write `value` as a literal in place. Akashiq reads decisions without running them, so a value that refers to a constant, spreads another object, or calls a function can't be shown or tracked. `as` and `satisfies` are fine.
 - One decision holds one thing. If something was decided separately per place or item, make separate decisions.
 - `decision` says what was decided in one or two sentences. Tests guard the detailed behavior.
 - `reason` says only why. Alternatives considered and history go in the commit message; `git log` and blame recover them.

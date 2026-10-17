@@ -6,7 +6,7 @@ export const parserDecisions = {
   } satisfies Decision,
   staticAnalysis: {
     decision: "Read decisions and tests by static analysis of the source, without executing project code",
-    reason: "akashiq should still run when the project's own code can't, such as before its development environment is set up",
+    reason: "Akashiq should still run when the project's own code can't, such as before its development environment is set up",
   } satisfies Decision,
   literalValue: {
     decision:
@@ -15,7 +15,7 @@ export const parserDecisions = {
   } satisfies Decision,
   typescriptSixParser: {
     decision:
-      "Parse with the JavaScript API of TypeScript 6 as akashiq's own dependency, independent of the TypeScript version the project compiles with",
+      "Parse with the JavaScript API of TypeScript 6 as Akashiq's own dependency, independent of the TypeScript version the project compiles with",
     reason:
       "Moving to another parser such as oxc costs about the same now or later, so move only once TypeScript adds syntax that TypeScript 6 can't read",
   } satisfies Decision,
