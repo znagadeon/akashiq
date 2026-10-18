@@ -1,6 +1,7 @@
-// Scans a project for decisions and the tests that guard them. Reads files only; never runs project code.
-import { globSync, readFileSync } from "node:fs";
-import { join, matchesGlob, sep } from "node:path";
+// Scans a project for decisions and the tests that guard them. Reads files and asks git which it ignores; never runs project code.
+import { execFileSync, spawnSync } from "node:child_process";
+import { existsSync, globSync, readFileSync } from "node:fs";
+import { basename, join, matchesGlob, sep } from "node:path";
 import { type Config, defaultConfig, loadConfig } from "../config.ts";
 import { type DecisionEntry, parseDecisions } from "./decisions.ts";
 import { type GuardingTest, parseGuards } from "./guards.ts";
@@ -12,22 +13,43 @@ export interface ProjectScan {
   unknownGuards: GuardingTest[];
 }
 
-const testFiles = "**/*.{spec,test}.{ts,tsx,mts,cts}";
-const ignored = (path: string) => /(^|\/)(node_modules|dist|\.git)$/.test(path);
+const testFiles = ["**/*.{spec,test}.{ts,tsx,mts,cts}"];
 
-/** Whether a project-relative path is outside node_modules, dist, and .git, and matches none of the ignore patterns. */
-export const isScanned = (path: string, ignore: readonly string[] = []) =>
-  !/(^|\/)(node_modules|dist|\.git)\//.test(path) && !ignore.some((pattern) => matchesGlob(path, pattern));
+/** Whether a project-relative path matches none of the ignore patterns. */
+export const isScanned = (path: string, ignore: readonly string[] = []) => !ignore.some((pattern) => matchesGlob(path, pattern));
 
-/** Whether a project-relative path is a decision file that scans read. */
+/** Whether a project-relative path is a decision file by the config's patterns and ignore list. Doesn't ask git, so callers pass only files git tracks. */
 export const isDecisionFile = (path: string, { patterns, ignore }: Config = defaultConfig) =>
   patterns.some((glob) => matchesGlob(path, glob)) && isScanned(path, ignore);
 
-/** Scans the project at root with its akashiq.config.json: decision files by its patterns, leaving out the paths it ignores. */
+/** Whether git ignores a path relative to root. False outside a git repository or without git. */
+export const isGitIgnored = (root: string, path: string) =>
+  spawnSync("git", ["check-ignore", "--quiet", "--", path], { cwd: root, stdio: "ignore" }).status === 0;
+
+/** Files under root that git doesn't ignore, tracked or not, relative to root. Undefined outside a git repository or without git. */
+function gitFiles(root: string): string[] | undefined {
+  try {
+    const output = execFileSync("git", ["ls-files", "--cached", "--others", "--exclude-standard", "-z"], {
+      cwd: root,
+      encoding: "utf8",
+      stdio: "pipe",
+      maxBuffer: 1024 * 1024 * 1024,
+    });
+    return output.split("\0").filter((file) => file !== "");
+  } catch {
+    return undefined;
+  }
+}
+
+/** Scans the project at root with its akashiq.config.json: decision files by its patterns, leaving out the paths git and the config ignore. */
 export function scanProject(root: string, config: Config = loadConfig(root)): ProjectScan {
-  const files = (pattern: string | string[]) =>
-    globSync(pattern, { cwd: root, exclude: ignored })
-      .map((file) => file.split(sep).join("/"))
+  const listed = gitFiles(root);
+  const files = (patterns: string[]) =>
+    (listed
+      ? // Tracked files deleted from the work tree are still listed.
+        listed.filter((file) => patterns.some((pattern) => matchesGlob(file, pattern)) && existsSync(join(root, file)))
+      : globSync(patterns, { cwd: root, exclude: (path) => basename(path) === ".git" }).map((file) => file.split(sep).join("/"))
+    )
       .filter((file) => isScanned(file, config.ignore))
       .sort();
   const read = (file: string) => readFileSync(join(root, file), "utf8");

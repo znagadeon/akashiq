@@ -6,7 +6,7 @@ import type { AddressInfo } from "node:net";
 import { basename, sep } from "node:path";
 import { type Config, defaultConfig, loadConfig } from "../config.ts";
 import { dashboardDecisions } from "../dashboard.decision.ts";
-import { isDecisionFile, scanProject } from "../parser/project.ts";
+import { isDecisionFile, isGitIgnored, scanProject } from "../parser/project.ts";
 import { dashboardData } from "./data.ts";
 
 const assets: Record<string, { file: string; type: string }> = {
@@ -17,7 +17,7 @@ const assets: Record<string, { file: string; type: string }> = {
 
 /** Files other than decision files whose change can change what the dashboard shows: the tests scanProject reads, and the config. */
 const watched = /\.(spec|test)\.(ts|tsx|mts|cts)$|(^|[\\/])akashiq\.config\.json$/;
-const ignored = /(^|[\\/])(node_modules|dist|\.git)([\\/]|$)/;
+const insideGit = /(^|[\\/])\.git([\\/]|$)/;
 
 /** The config for picking which changes to report. A malformed config falls back to the defaults; the scan reports the error itself. */
 function configOrDefault(root: string): Config {
@@ -67,8 +67,10 @@ export async function startDashboard(root: string, port = dashboardDecisions.def
   // Saving a file often fires several events at once, so wait for them to settle before telling the dashboards.
   let timer: NodeJS.Timeout | undefined;
   const watcher: FSWatcher = watch(root, { recursive: true }, (_event, file) => {
-    if (!file || ignored.test(file)) return;
-    if (!watched.test(file) && !isDecisionFile(file.split(sep).join("/"), configOrDefault(root))) return;
+    if (!file || insideGit.test(file)) return;
+    const path = file.split(sep).join("/");
+    if (!watched.test(path) && !isDecisionFile(path, configOrDefault(root))) return;
+    if (isGitIgnored(root, path)) return;
     clearTimeout(timer);
     timer = setTimeout(() => {
       for (const client of clients) client.write("event: change\ndata: {}\n\n");

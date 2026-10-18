@@ -1,8 +1,10 @@
+import { execFileSync } from "node:child_process";
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { guards } from "@akashiq/core";
 import { afterEach, describe, expect, it } from "vitest";
+import { configDecisions } from "../config.decision.ts";
 import { dashboardDecisions } from "../dashboard.decision.ts";
 import { parserDecisions } from "../parser.decision.ts";
 import type { DashboardData } from "./data.ts";
@@ -81,6 +83,22 @@ describe("dashboard server", () => {
       write("src/pricing.decision.ts", 'export const pricingDecisions = { currency: { decision: "Charge in USD" } };');
       await stream.until("event: change");
       expect(await decisionIds(url)).toEqual(["cartDecisions.a", "pricingDecisions.currency"]);
+      await stream.close();
+    });
+  });
+
+  it("watches decision files in any directory git doesn't ignore", async () => {
+    await guards(configDecisions.gitIgnoredFiles, async () => {
+      root = mkdtempSync(join(tmpdir(), "akashiq-"));
+      execFileSync("git", ["init", "-q"], { cwd: root });
+      write(".gitignore", "node_modules/\n");
+      dashboard = await startDashboard(root, 0);
+      const { url } = dashboard;
+      const stream = await events(url);
+
+      write("dist/pricing.decision.ts", 'export const pricingDecisions = { currency: { decision: "Charge in USD" } };');
+      await stream.until("event: change");
+      expect(await decisionIds(url)).toEqual(["pricingDecisions.currency"]);
       await stream.close();
     });
   });

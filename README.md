@@ -148,7 +148,7 @@ Run `npx akashiq help` for every command's options, or `npx akashiq help <comman
 
 Akashiq reads your source and never runs it, so it works even when the project can't build or its environment isn't set up.
 
-- Decision files are `*.decision.ts`, or the files `patterns` match. Test files are `*.spec.*` and `*.test.*` (`.ts`, `.tsx`, `.mts`, `.cts`). `node_modules`, `dist`, `.git`, and the paths in `ignore` (see below) are skipped.
+- Decision files are `*.decision.ts`, or the files `patterns` match. Test files are `*.spec.*` and `*.test.*` (`.ts`, `.tsx`, `.mts`, `.cts`). Files git ignores and the paths in `ignore` (see below) are skipped. Outside a git repository, only `.git` and `ignore` are.
 - A decision is a property of an exported object whose value has a `decision` or `reason` property.
 - A test is linked to a decision when the first argument of `guards` is written exactly as the decision's ID.
 - Because values are read as text, a value that refers to a constant, spreads an object, or calls a function is flagged: its actual value can't be shown or tracked.

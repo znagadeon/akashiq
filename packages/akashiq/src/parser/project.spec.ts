@@ -1,3 +1,4 @@
+import { execFileSync } from "node:child_process";
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
@@ -14,6 +15,8 @@ afterEach(() => {
   if (root) rmSync(root, { recursive: true, force: true });
   root = undefined;
 });
+
+const decision = (name: string) => `export const ${name}Decisions = { a: { decision: "${name}" } };`;
 
 /** Writes files into a fresh temporary project and returns its root. */
 function project(files: Record<string, string>): string {
@@ -35,7 +38,6 @@ describe("scanProject", () => {
         project({
           "src/deep/nested/cart.decision.ts": 'export const cartDecisions = { a: { decision: "Next to the code" } };',
           "decisions/dir.ts": inDecisionsDirectory,
-          "node_modules/lib/lib.decision.ts": 'export const libDecisions = { a: { decision: "From a dependency" } };',
         }),
       );
       expect(scan.decisions.map((decision) => [decision.id, decision.file])).toEqual([
@@ -46,7 +48,6 @@ describe("scanProject", () => {
 
   it("finds decision files by the patterns in akashiq.config.json instead", () => {
     guards(parserDecisions.decisionFilePatterns, () => {
-      const decision = (name: string) => `export const ${name}Decisions = { a: { decision: "${name}" } };`;
       const root = project({
         "decisions/cart.ts": decision("cart"),
         "decisions/deep/pricing.ts": decision("pricing"),
@@ -91,7 +92,6 @@ describe("scanProject", () => {
 
   it("leaves out the paths that akashiq.config.json ignores", () => {
     guards(configDecisions.ignoreGlobs, () => {
-      const decision = (name: string) => `export const ${name}Decisions = { a: { decision: "${name}" } };`;
       const root = project({
         "packages/app/src/app.decision.ts": decision("app"),
         "examples/minimal/src/shop.decision.ts": decision("shop"),
@@ -104,6 +104,42 @@ describe("scanProject", () => {
       const scan = scanProject(root);
       expect(scan.decisions.map((entry) => entry.id)).toEqual(["appDecisions.a"]);
       expect(scan.guards).toEqual([]);
+    });
+  });
+
+  it("leaves out the files git ignores, and nothing else built in", () => {
+    guards(configDecisions.gitIgnoredFiles, () => {
+      const root = project({
+        ".gitignore": "node_modules/\nbuild/\n",
+        "node_modules/lib/lib.decision.ts": decision("lib"),
+        "node_modules/lib/lib.test.ts": 'it("a", () => guards(libDecisions.a, () => {}));',
+        "build/out.decision.ts": decision("out"),
+        "dist/kept.decision.ts": decision("kept"),
+        "packages/app/app.decision.ts": decision("app"),
+      });
+      execFileSync("git", ["init", "-q"], { cwd: root });
+      execFileSync("git", ["add", "dist", ".gitignore"], { cwd: root });
+
+      // Tracked or not, a file git doesn't ignore is scanned.
+      const scan = scanProject(root);
+      expect(scan.decisions.map((entry) => entry.file)).toEqual(["dist/kept.decision.ts", "packages/app/app.decision.ts"]);
+      expect(scan.guards).toEqual([]);
+      expect(scanProject(join(root, "packages/app")).decisions.map((entry) => entry.file)).toEqual(["app.decision.ts"]);
+    });
+  });
+
+  it("scans every file but .git and the ignore list outside a git repository", () => {
+    guards(configDecisions.gitIgnoredFiles, () => {
+      const root = project({
+        ".gitignore": "node_modules/\n",
+        "node_modules/lib/lib.decision.ts": decision("lib"),
+        "dist/kept.decision.ts": decision("kept"),
+        "examples/shop.decision.ts": decision("shop"),
+        ".git/hooks/hook.decision.ts": decision("hook"),
+        "akashiq.config.json": '{ "ignore": ["examples/**"] }',
+      });
+      expect(() => execFileSync("git", ["rev-parse"], { cwd: root, stdio: "pipe" })).toThrow();
+      expect(scanProject(root).decisions.map((entry) => entry.file)).toEqual(["dist/kept.decision.ts", "node_modules/lib/lib.decision.ts"]);
     });
   });
 

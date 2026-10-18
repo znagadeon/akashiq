@@ -6,7 +6,7 @@ import { parserDecisions } from "./parser.decision.ts";
 export const configFile = "akashiq.config.json";
 
 export interface Config {
-  /** Glob patterns, relative to the project root, of paths to leave out of scans, on top of node_modules, dist, and .git. */
+  /** Glob patterns, relative to the project root, of paths to leave out of scans, on top of the files git ignores. */
   ignore: string[];
   /** Glob patterns, relative to the project root, of decision files. */
   patterns: string[];
