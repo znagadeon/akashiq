@@ -1,14 +1,14 @@
 // Turns the changes between two revisions into warnings about decisions, and prints them. Reads through a Repository, so it can run without git.
 import { type Config, defaultConfig } from "../config.ts";
 import { type DecisionEntry, parseDecisions } from "../parser/decisions.ts";
-import { isDecisionFile, isScanned } from "../parser/project.ts";
+import { isDecisionFile, isScanned, isSourceFile } from "../parser/project.ts";
 import { referrersOf } from "../parser/references.ts";
 import { changedDecisions, type DecisionChange, type TextChange } from "./decisions.ts";
 import { parseDiff } from "./diff.ts";
 import { assertionChange, touchedRanges } from "./guarded.ts";
 
 export interface Repository {
-  /** `git diff --unified=0` output between two revisions, for TypeScript files. */
+  /** `git diff --unified=0` output between two revisions, for TypeScript and JavaScript files. */
   diff(from: string, to: string): string;
   /** A file's content at a revision, or undefined if it doesn't exist there. */
   show(revision: string, path: string): string | undefined;
@@ -42,23 +42,23 @@ export interface DecisionWarning {
 
 /** Warnings for decisions a change between two revisions may have affected, in the order they come up. Decision files are found and paths left out as config says. */
 export function collectWarnings(repository: Repository, from: string, to: string, config: Config = defaultConfig): DecisionWarning[] {
-  const isTypeScript = (path: string | undefined) =>
-    path !== undefined && /\.(ts|tsx|mts|cts)$/.test(path) && isScanned(path, config.ignore);
+  const isSource = (path: string | undefined) => path !== undefined && isSourceFile(path) && isScanned(path, config.ignore);
   const isDecision = (path: string | undefined) => path !== undefined && isDecisionFile(path, config);
   const guards = new Map<string, Map<string, GuardChange>>();
   const changes = new Map<string, DecisionChange>();
 
   for (const file of parseDiff(repository.diff(from, to))) {
-    if (!isTypeScript(file.oldPath) && !isTypeScript(file.newPath)) continue;
+    if (!isSource(file.oldPath) && !isSource(file.newPath)) continue;
     const before = file.oldPath ? repository.show(from, file.oldPath) : undefined;
     const after = file.newPath ? repository.show(to, file.newPath) : undefined;
 
-    const expects = assertionChange(before ?? "", after ?? "");
+    const latest = file.newPath ?? file.oldPath ?? "";
+    const expects = assertionChange({ path: file.oldPath ?? latest, source: before ?? "" }, { path: latest, source: after ?? "" });
     // In a file the change added, every helper changed with its tests, so listing them says nothing.
     const added = file.oldPath === undefined;
     const record = (path: string, source: string | undefined, hunks: typeof file.oldHunks) => {
       if (source === undefined) return;
-      for (const range of touchedRanges(source, hunks)) {
+      for (const range of touchedRanges(path, source, hunks)) {
         if (added && range.helper) continue;
         const byPlace = guards.get(range.decision) ?? new Map<string, GuardChange>();
         guards.set(range.decision, byPlace);
@@ -75,7 +75,7 @@ export function collectWarnings(repository: Repository, from: string, to: string
     if (file.newPath) record(file.newPath, after, file.newHunks);
 
     if (isDecision(file.oldPath) || isDecision(file.newPath)) {
-      for (const change of changedDecisions(file.newPath ?? file.oldPath ?? "", before, after)) changes.set(change.id, change);
+      for (const change of changedDecisions(latest, before, after)) changes.set(change.id, change);
     }
   }
 

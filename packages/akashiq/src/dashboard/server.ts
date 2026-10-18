@@ -4,9 +4,9 @@ import { type FSWatcher, readFileSync, watch } from "node:fs";
 import { createServer, type ServerResponse } from "node:http";
 import type { AddressInfo } from "node:net";
 import { basename, sep } from "node:path";
-import { type Config, defaultConfig, loadConfig } from "../config.ts";
+import { type Config, configFile, defaultConfig, loadConfig } from "../config.ts";
 import { dashboardDecisions } from "../dashboard.decision.ts";
-import { isDecisionFile, isGitIgnored, scanProject } from "../parser/project.ts";
+import { isDecisionFile, isGitIgnored, isTestFile, scanProject } from "../parser/project.ts";
 import { dashboardData } from "./data.ts";
 
 const assets: Record<string, { file: string; type: string }> = {
@@ -15,8 +15,6 @@ const assets: Record<string, { file: string; type: string }> = {
   "/style.css": { file: "style.css", type: "text/css; charset=utf-8" },
 };
 
-/** Files other than decision files whose change can change what the dashboard shows: the tests scanProject reads, and the config. */
-const watched = /\.(spec|test)\.(ts|tsx|mts|cts)$|(^|[\\/])akashiq\.config\.json$/;
 const insideGit = /(^|[\\/])\.git([\\/]|$)/;
 
 /** The config for picking which changes to report. A malformed config falls back to the defaults; the scan reports the error itself. */
@@ -69,7 +67,8 @@ export async function startDashboard(root: string, port = dashboardDecisions.def
   const watcher: FSWatcher = watch(root, { recursive: true }, (_event, file) => {
     if (!file || insideGit.test(file)) return;
     const path = file.split(sep).join("/");
-    if (!watched.test(path) && !isDecisionFile(path, configOrDefault(root))) return;
+    // The files whose change can change what the dashboard shows: decision files, tests, and the config.
+    if (path !== configFile && !isTestFile(path) && !isDecisionFile(path, configOrDefault(root))) return;
     if (isGitIgnored(root, path)) return;
     clearTimeout(timer);
     timer = setTimeout(() => {

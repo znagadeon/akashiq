@@ -39,7 +39,7 @@ npm install --save-dev akashiq @akashiq/core
 
 ### 1. 결정 기록하기
 
-결정은 관련 코드 옆의 `*.decision.ts` 파일에 둡니다. Akashiq은 프로젝트 어디에 있든 이 파일들을 찾습니다. `decisions/` 디렉터리처럼 다른 곳에 두려면 `patterns`를 설정합니다([설정](#설정) 참고).
+결정은 관련 코드 옆의 `*.decision.ts` 파일(JavaScript에서는 `*.decision.js`)에 둡니다. Akashiq은 프로젝트 어디에 있든 이 파일들을 찾습니다. `decisions/` 디렉터리처럼 다른 곳에 두려면 `patterns`를 설정합니다([설정](#설정) 참고).
 
 ```ts
 // src/shipping.decision.ts
@@ -67,6 +67,24 @@ export const shippingDecisions = {
 | `unconfirmed` | 에이전트가 정하고 사람이 아직 확인하지 않은 결정에 붙입니다. |
 
 `shippingDecisions.freeShippingThreshold` 같은 키 경로가 결정의 ID입니다.
+
+JavaScript에서는 같은 객체를 `satisfies` 없이 씁니다. 에디터나 `checkJs`가 JSDoc을 읽으면 같은 타입 검사를 받습니다.
+
+```js
+// src/shipping.decision.js
+/** @import { AnyDecision, Decision } from "@akashiq/core" */
+
+export const shippingDecisions = {
+  freeShippingThreshold: /** @satisfies {Decision<number>} */ ({
+    decision: "Orders at or above the threshold ship free",
+    value: 50,
+  }),
+  thresholdAfterDiscount: /** @satisfies {Decision} */ ({
+    decision: "Compare the order total after coupons, not before, with the free shipping threshold",
+    dependsOn: /** @returns {AnyDecision[]} */ () => [shippingDecisions.freeShippingThreshold],
+  }),
+};
+```
 
 ### 2. 코드에서 읽기
 
@@ -148,7 +166,7 @@ npx akashiq changes        # or run it yourself: HEAD~1..HEAD by default, or --f
 
 Akashiq은 소스를 읽기만 하고 실행하지 않습니다. 그래서 프로젝트가 빌드되지 않거나 개발 환경이 갖춰지지 않아도 동작합니다.
 
-- 결정 파일은 `*.decision.ts`이거나 `patterns`에 맞는 파일이고, 테스트 파일은 `*.spec.*`과 `*.test.*`(`.ts`, `.tsx`, `.mts`, `.cts`)입니다. git이 무시하는 파일과 `ignore`에 적은 경로(아래 참고)는 건너뜁니다. git 저장소 밖에서는 `.git`과 `ignore`에 적은 경로만 건너뜁니다.
+- 결정 파일은 TypeScript나 JavaScript로 쓴 `*.decision.*`(`.ts`, `.mts`, `.cts`, `.js`, `.mjs`, `.cjs`)이거나 `patterns`에 맞는 파일이고, 테스트 파일은 `*.spec.*`과 `*.test.*`(같은 확장자에 `.tsx`, `.jsx`를 더한 것)입니다. git이 무시하는 파일과 `ignore`에 적은 경로(아래 참고)는 건너뜁니다. git 저장소 밖에서는 `.git`과 `ignore`에 적은 경로만 건너뜁니다.
 - 내보낸(export) 객체의 속성 중 값에 `decision`이나 `reason` 속성이 있는 것이 결정입니다.
 - `guards`의 첫 번째 인자가 결정의 ID와 똑같이 적혀 있으면 그 테스트와 결정이 연결됩니다.
 - 값을 텍스트로 읽기 때문에, 상수를 참조하거나 객체를 펼치거나(spread) 함수를 호출하는 값은 따로 표시합니다. 실제 값을 보여 주거나 추적할 수 없기 때문입니다.

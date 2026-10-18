@@ -39,7 +39,7 @@ npm install --save-dev akashiq @akashiq/core
 
 ### 1. Record a decision
 
-Put decisions in a `*.decision.ts` file next to the code they concern. Akashiq finds these files anywhere in the project; to keep them elsewhere, such as in a `decisions/` directory, set `patterns` (see [Configuration](#configuration)).
+Put decisions in a `*.decision.ts` file (`*.decision.js` in JavaScript) next to the code they concern. Akashiq finds these files anywhere in the project; to keep them elsewhere, such as in a `decisions/` directory, set `patterns` (see [Configuration](#configuration)).
 
 ```ts
 // src/shipping.decision.ts
@@ -67,6 +67,24 @@ export const shippingDecisions = {
 | `unconfirmed` | Set when an agent made the decision and a person hasn't confirmed it yet. |
 
 The key path, such as `shippingDecisions.freeShippingThreshold`, is the decision's ID.
+
+In JavaScript, write the same objects without `satisfies`. JSDoc gives the same type checks where your editor or `checkJs` reads it:
+
+```js
+// src/shipping.decision.js
+/** @import { AnyDecision, Decision } from "@akashiq/core" */
+
+export const shippingDecisions = {
+  freeShippingThreshold: /** @satisfies {Decision<number>} */ ({
+    decision: "Orders at or above the threshold ship free",
+    value: 50,
+  }),
+  thresholdAfterDiscount: /** @satisfies {Decision} */ ({
+    decision: "Compare the order total after coupons, not before, with the free shipping threshold",
+    dependsOn: /** @returns {AnyDecision[]} */ () => [shippingDecisions.freeShippingThreshold],
+  }),
+};
+```
 
 ### 2. Read it from code
 
@@ -148,7 +166,7 @@ Run `npx akashiq help` for every command's options, or `npx akashiq help <comman
 
 Akashiq reads your source and never runs it, so it works even when the project can't build or its environment isn't set up.
 
-- Decision files are `*.decision.ts`, or the files `patterns` match. Test files are `*.spec.*` and `*.test.*` (`.ts`, `.tsx`, `.mts`, `.cts`). Files git ignores and the paths in `ignore` (see below) are skipped. Outside a git repository, only `.git` and `ignore` are.
+- Decision files are `*.decision.*` in TypeScript or JavaScript (`.ts`, `.mts`, `.cts`, `.js`, `.mjs`, `.cjs`), or the files `patterns` match. Test files are `*.spec.*` and `*.test.*` (the same, plus `.tsx` and `.jsx`). Files git ignores and the paths in `ignore` (see below) are skipped. Outside a git repository, only `.git` and `ignore` are.
 - A decision is a property of an exported object whose value has a `decision` or `reason` property.
 - A test is linked to a decision when the first argument of `guards` is written exactly as the decision's ID.
 - Because values are read as text, a value that refers to a constant, spreads an object, or calls a function is flagged: its actual value can't be shown or tracked.

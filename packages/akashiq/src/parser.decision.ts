@@ -4,10 +4,16 @@ import { configDecisions } from "./config.decision.ts";
 export const parserDecisions = {
   decisionFilePatterns: {
     decision:
-      "Find decision files by the glob patterns in the config's patterns list, *.decision.ts files anywhere in the project by default",
-    value: ["**/*.decision.ts"],
-    reason: "Projects differ in where they keep decisions: next to the code they concern, or gathered in a decisions directory",
+      "Find decision files by the glob patterns in the config's patterns list, by default *.decision files in TypeScript or JavaScript anywhere in the project",
+    value: ["**/*.decision.{ts,mts,cts,js,mjs,cjs}"],
+    reason:
+      "Projects differ in where they keep decisions: next to the code they concern, or gathered in a decisions directory. Projects written only in JavaScript should be able to use Akashiq too",
     dependsOn: (): AnyDecision[] => [configDecisions.configFile],
+  } satisfies Decision<string[]>,
+  testFiles: {
+    decision: "Read tests from *.spec and *.test files in TypeScript or JavaScript, JSX included",
+    value: ["**/*.{spec,test}.{ts,tsx,mts,cts,js,jsx,mjs,cjs}"],
+    reason: "Projects written only in JavaScript should be able to use Akashiq too",
   } satisfies Decision<string[]>,
   staticAnalysis: {
     decision: "Read decisions and tests by static analysis of the source, without executing project code",

@@ -18,8 +18,8 @@ export interface GuardedRange {
  * Helpers count because changing only a helper can leave the test checking a situation unrelated to the decision.
  * Other files, including product code, are not followed. Matching is by name, so shadowing can widen a range; that beats missing a change.
  */
-export function guardedRanges(source: string): GuardedRange[] {
-  const file = parse("guarded.ts", source);
+export function guardedRanges(path: string, source: string): GuardedRange[] {
+  const file = parse(path, source);
   const line = (position: number) => file.getLineAndCharacterOfPosition(position).line + 1;
   const span = (node: ts.Node) => ({ start: line(node.getStart(file)), end: line(node.getEnd()) });
 
@@ -80,8 +80,8 @@ export function guardedRanges(source: string): GuardedRange[] {
 }
 
 /** The guarded ranges in one side of a diff (before or after the change) that the hunks changed. */
-export function touchedRanges(source: string, hunks: Hunk[]): GuardedRange[] {
-  return guardedRanges(source).filter((range) => hunks.some((hunk) => touches(range, hunk)));
+export function touchedRanges(path: string, source: string, hunks: Hunk[]): GuardedRange[] {
+  return guardedRanges(path, source).filter((range) => hunks.some((hunk) => touches(range, hunk)));
 }
 
 /**
@@ -89,8 +89,11 @@ export function touchedRanges(source: string, hunks: Hunk[]): GuardedRange[] {
  * Tests are matched by name, and a test counts on both sides if it guards the decision on either side.
  * Summing per decision alone would show a change that wraps a test in guards while dropping an assertion as a gain.
  */
-export function assertionChange(before: string, after: string): Map<string, { from: number; to: number }> {
-  const [old, next] = [testsOf(before), testsOf(after)];
+export function assertionChange(
+  before: { path: string; source: string },
+  after: { path: string; source: string },
+): Map<string, { from: number; to: number }> {
+  const [old, next] = [testsOf(before.path, before.source), testsOf(after.path, after.source)];
   const decisions = new Map<string, Set<string>>();
   for (const tests of [old, next]) {
     for (const [name, test] of tests) {
@@ -108,8 +111,8 @@ interface TestAssertions {
 }
 
 /** For each test name (the source text of its first argument), its expect count and the decisions it guards. Same-named tests are merged. */
-function testsOf(source: string): Map<string, TestAssertions> {
-  const file = parse("guarded.ts", source);
+function testsOf(path: string, source: string): Map<string, TestAssertions> {
+  const file = parse(path, source);
   const tests = new Map<string, TestAssertions>();
   const visit = (node: ts.Node, test: TestAssertions | undefined) => {
     let current = test;

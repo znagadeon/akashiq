@@ -9,7 +9,7 @@ Akashiq keeps the reasons behind code from getting lost. A policy judgment is re
 
 ## What counts as a decision
 
-A judgment the code alone can't explain: a chosen value (a threshold, a limit, a rate), a policy, an exception, a trade-off between alternatives. Don't write it straight into code. Record it in a `*.decision.ts` file next to the code it concerns, and have the code read it.
+A judgment the code alone can't explain: a chosen value (a threshold, a limit, a rate), a policy, an exception, a trade-off between alternatives. Don't write it straight into code. Record it in a `*.decision.ts` file (`*.decision.js` in a JavaScript project) next to the code it concerns, and have the code read it.
 
 Not a decision: anything an external spec, library, or obvious correctness already dictates.
 
@@ -31,7 +31,7 @@ export const shippingDecisions = {
 };
 ```
 
-- Export decisions as an object named `xxxDecisions`. The key path, such as `shippingDecisions.freeShippingThreshold`, is the decision's ID. Akashiq finds `*.decision.ts` files anywhere in the project, or the files matching `patterns` in `akashiq.config.json`; where a project sets `patterns`, put decision files where it says.
+- Export decisions as an object named `xxxDecisions`. The key path, such as `shippingDecisions.freeShippingThreshold`, is the decision's ID. Akashiq finds `*.decision.ts` and `*.decision.js` files anywhere in the project, or the files matching `patterns` in `akashiq.config.json`; where a project sets `patterns`, put decision files where it says.
 - If code reads a value, declare `Decision<ValueType>` and put it in `value`. Otherwise declare `Decision`, which forbids `value`.
 - Write `value` as a literal in place. Akashiq reads decisions without running them, so a value that refers to a constant, spreads another object, or calls a function can't be shown or tracked. `as` and `satisfies` are fine.
 - One decision holds one thing. If something was decided separately per place or item, make separate decisions.
@@ -40,6 +40,7 @@ export const shippingDecisions = {
 - `reason` holds only reasons the user gave. Never invent one. A reason you proposed counts once the user heard and accepted it. If you can't tell whether they accepted it, leave it out. If the user decided without a reason, omit `reason`; don't ask for one or write "not given yet". Don't record who decided or when.
 - If a decision relies on another, list it in `dependsOn`. If `decision` or `reason` mentions another decision's ID, list that one too. Annotate the return type as `AnyDecision[]`.
 - A decision you made rather than the user, including going ahead with your own recommendation, gets `unconfirmed: true`. Remove it once the user confirms.
+- In JavaScript, mark each decision with JSDoc instead of `satisfies`: `/** @satisfies {Decision<number>} */ ({ … })`, with `/** @import { AnyDecision, Decision } from "@akashiq/core" */` at the top and `/** @returns {AnyDecision[]} */` on `dependsOn`.
 - When a decision changes, rewrite `decision` and `reason` as the single current decision. Don't append to the old text.
 
 ## Before adding or changing a policy

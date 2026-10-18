@@ -1,5 +1,6 @@
 // A Repository backed by the git command line.
 import { execFileSync, spawnSync } from "node:child_process";
+import { sourceExtensions } from "../parser/project.ts";
 import type { Repository } from "./report.ts";
 
 export function gitRepository(cwd: string): Repository & { root: string; exists(revision: string): boolean } {
@@ -19,10 +20,7 @@ export function gitRepository(cwd: string): Repository & { root: string; exists(
         from,
         to,
         "--",
-        "*.ts",
-        "*.tsx",
-        "*.mts",
-        "*.cts",
+        ...sourceExtensions.map((extension) => `*.${extension}`),
       ),
     show: (revision, path) => {
       const result = spawnSync("git", ["show", `${revision}:${path}`], { cwd, encoding: "utf8", maxBuffer: 256 * 1024 * 1024 });

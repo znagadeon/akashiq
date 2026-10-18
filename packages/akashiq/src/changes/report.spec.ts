@@ -89,6 +89,41 @@ describe("warnings after a commit", () => {
     expect(collectWarnings(git, "HEAD~1", "HEAD", { ...defaultConfig, ignore: ["examples/**"] })).toEqual([]);
   });
 
+  it("warns about decisions and guarding tests written in JavaScript", () => {
+    guards(parserDecisions.testFiles, () => {
+      // Parsed as TypeScript instead of JSX, the first test would run on into the second.
+      const jsx = (assertions: string) =>
+        [
+          'it("lists the free items", () => {',
+          "  guards(shippingDecisions.freeShippingThreshold, () => {",
+          "    render(<ul>{items.map((item) => <li key={item}>{item}</li>)}</ul>);",
+          "    expect(items).toHaveLength(2);",
+          "  });",
+          "});",
+          'it("charges after coupons", () => {',
+          "  guards(shippingDecisions.thresholdAfterDiscount, () => {",
+          assertions,
+          "  });",
+          "});",
+          "",
+        ].join("\n");
+      repository = testRepository();
+      repository.commit({
+        "src/shipping.decision.js": decisions("50").replace(/ satisfies Decision(<number>)?|: AnyDecision\[\]|import type .*\n/g, ""),
+        "src/cart.test.jsx": jsx("    expect(shipsFree(55, 10)).toBe(false);\n    expect(shipsFree(60, 10)).toBe(true);"),
+      });
+      repository.commit({ "src/cart.test.jsx": jsx("    expect(shipsFree(55, 10)).toBe(false);") });
+      const warnings = collectWarnings(gitRepository(repository.root), "HEAD~1", "HEAD");
+      expect(warnings.map((warning) => [warning.id, warning.entry?.file, warning.guards])).toEqual([
+        [
+          "shippingDecisions.thresholdAfterDiscount",
+          "src/shipping.decision.js",
+          [{ file: "src/cart.test.jsx", line: 7, expects: { from: 2, to: 1 } }],
+        ],
+      ]);
+    });
+  });
+
   it("finds changed decision files by the configured patterns", () => {
     guards(parserDecisions.decisionFilePatterns, () => {
       repository = testRepository();

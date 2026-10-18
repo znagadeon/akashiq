@@ -46,6 +46,36 @@ describe("scanProject", () => {
     });
   });
 
+  it("reads decisions and tests written in JavaScript by default", () => {
+    guards(parserDecisions.decisionFilePatterns, () => {
+      guards(parserDecisions.testFiles, () => {
+        const scan = scanProject(
+          project({
+            "src/shipping.decision.js": [
+              '/** @import { Decision } from "@akashiq/core" */',
+              "export const shippingDecisions = {",
+              '  threshold: /** @satisfies {Decision<number>} */ ({ decision: "Ship free from 50", value: 50 }),',
+              "};",
+            ].join("\n"),
+            "src/cart.decision.mjs": decision("cart"),
+            "src/cart.decision.jsx": decision("view"),
+            "src/shipping.test.js": 'it("ships free", () => guards(shippingDecisions.threshold, () => {}));',
+            "src/cart.spec.jsx": 'it("renders", () => guards(cartDecisions.a, () => render(<Cart />)));',
+          }),
+        );
+        expect(scan.decisions.map((entry) => [entry.id, entry.value])).toEqual([
+          ["cartDecisions.a", undefined],
+          ["shippingDecisions.threshold", "50"],
+        ]);
+        expect(scan.guards.map((guard) => [guard.decision, guard.file])).toEqual([
+          ["cartDecisions.a", "src/cart.spec.jsx"],
+          ["shippingDecisions.threshold", "src/shipping.test.js"],
+        ]);
+        expect(scan.unknownGuards).toEqual([]);
+      });
+    });
+  });
+
   it("finds decision files by the patterns in akashiq.config.json instead", () => {
     guards(parserDecisions.decisionFilePatterns, () => {
       const root = project({

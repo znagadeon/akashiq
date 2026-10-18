@@ -3,6 +3,7 @@ import { execFileSync, spawnSync } from "node:child_process";
 import { existsSync, globSync, readFileSync } from "node:fs";
 import { basename, join, matchesGlob, sep } from "node:path";
 import { type Config, defaultConfig, loadConfig } from "../config.ts";
+import { parserDecisions } from "../parser.decision.ts";
 import { type DecisionEntry, parseDecisions } from "./decisions.ts";
 import { type GuardingTest, parseGuards } from "./guards.ts";
 
@@ -13,7 +14,13 @@ export interface ProjectScan {
   unknownGuards: GuardingTest[];
 }
 
-const testFiles = ["**/*.{spec,test}.{ts,tsx,mts,cts}"];
+/** Extensions of the TypeScript and JavaScript files Akashiq reads. */
+export const sourceExtensions = ["ts", "tsx", "mts", "cts", "js", "jsx", "mjs", "cjs"];
+
+export const isSourceFile = (path: string) => sourceExtensions.some((extension) => path.endsWith(`.${extension}`));
+
+/** Whether a project-relative path is a test file that scans read. */
+export const isTestFile = (path: string) => parserDecisions.testFiles.value.some((pattern) => matchesGlob(path, pattern));
 
 /** Whether a project-relative path matches none of the ignore patterns. */
 export const isScanned = (path: string, ignore: readonly string[] = []) => !ignore.some((pattern) => matchesGlob(path, pattern));
@@ -54,7 +61,7 @@ export function scanProject(root: string, config: Config = loadConfig(root)): Pr
       .sort();
   const read = (file: string) => readFileSync(join(root, file), "utf8");
   const decisions = files(config.patterns).flatMap((file) => parseDecisions(file, read(file)));
-  const guards = files(testFiles).flatMap((file) => parseGuards(file, read(file)));
+  const guards = files(parserDecisions.testFiles.value).flatMap((file) => parseGuards(file, read(file)));
   const ids = new Set(decisions.map((decision) => decision.id));
   return { decisions, guards, unknownGuards: guards.filter((guard) => !ids.has(guard.decision)) };
 }

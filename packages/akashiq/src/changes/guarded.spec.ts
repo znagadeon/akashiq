@@ -32,13 +32,15 @@ it.each([[1], [2]])("row %i of a table", (count) => {
 `;
 
 const decisionsTouchedAt = (line: number) => [
-  ...new Set(touchedRanges(source, [{ start: line, count: 1 }]).map((range) => range.decision)),
+  ...new Set(touchedRanges("shipping.test.ts", source, [{ start: line, count: 1 }]).map((range) => range.decision)),
 ];
 
 describe("guarded ranges", () => {
   it("cover the whole it around guards and the helpers it uses in the same file, followed transitively", () => {
     guards(changesDecisions.guardHelpers, () => {
-      expect(guardedRanges(source).filter((range) => range.decision === "shippingDecisions.freeShippingThreshold")).toEqual([
+      expect(
+        guardedRanges("shipping.test.ts", source).filter((range) => range.decision === "shippingDecisions.freeShippingThreshold"),
+      ).toEqual([
         { decision: "shippingDecisions.freeShippingThreshold", start: 10, end: 15 },
         { decision: "shippingDecisions.freeShippingThreshold", start: 4, end: 4, helper: "nearThreshold" },
         { decision: "shippingDecisions.freeShippingThreshold", start: 6, end: 8, helper: "withCoupon" },
@@ -66,7 +68,10 @@ describe("assertionChange", () => {
   const below = "  expect(discounted.subtotal).toBeGreaterThanOrEqual(50);\n  expect(shipsFree(discounted)).toBe(false);";
   const above = "\n  expect(shipsFree(full)).toBe(true);";
   const wrapped = (body: string) => `  guards(shippingDecisions.thresholdAfterDiscount, () => {\n${body}\n  });`;
-  const count = (before: string, after: string) => assertionChange(before, after).get("shippingDecisions.thresholdAfterDiscount");
+  const count = (before: string, after: string) =>
+    assertionChange({ path: "shipping.test.ts", source: before }, { path: "shipping.test.ts", source: after }).get(
+      "shippingDecisions.thresholdAfterDiscount",
+    );
 
   it("counts the expect calls in the tests guarding a decision, before and after", () => {
     guards(changesDecisions.assertionCount, () => {
@@ -86,7 +91,7 @@ describe("assertionChange", () => {
   });
 
   it("ignores expect calls in tests that guard nothing", () => {
-    expect(Object.fromEntries(assertionChange(source, source))).toEqual({
+    expect(Object.fromEntries(assertionChange({ path: "shipping.test.ts", source }, { path: "shipping.test.ts", source }))).toEqual({
       "shippingDecisions.freeShippingThreshold": { from: 1, to: 1 },
       "shippingDecisions.flatFee": { from: 1, to: 1 },
     });

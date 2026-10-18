@@ -5,6 +5,7 @@ import { guards } from "@akashiq/core";
 import { afterEach, describe, expect, it } from "vitest";
 import { configDecisions } from "./config.decision.ts";
 import { configFile, loadConfig } from "./config.ts";
+import { parserDecisions } from "./parser.decision.ts";
 
 let root: string | undefined;
 afterEach(() => {
@@ -20,13 +21,16 @@ function withConfig(content: string | undefined): string {
 
 describe("loadConfig", () => {
   it("ignores nothing and looks for *.decision.ts files when there is no config file", () => {
-    expect(loadConfig(withConfig(undefined))).toEqual({ ignore: [], patterns: ["**/*.decision.ts"] });
+    expect(loadConfig(withConfig(undefined))).toEqual({ ignore: [], patterns: parserDecisions.decisionFilePatterns.value });
   });
 
   it("reads akashiq.config.json at the project root", () => {
     guards(configDecisions.configFile, () => {
       expect(configFile).toBe("akashiq.config.json");
-      expect(loadConfig(withConfig('{ "ignore": ["examples/**"] }'))).toEqual({ ignore: ["examples/**"], patterns: ["**/*.decision.ts"] });
+      expect(loadConfig(withConfig('{ "ignore": ["examples/**"] }'))).toEqual({
+        ignore: ["examples/**"],
+        patterns: parserDecisions.decisionFilePatterns.value,
+      });
       expect(loadConfig(withConfig('{ "patterns": ["decisions/**/*.ts"] }'))).toEqual({ ignore: [], patterns: ["decisions/**/*.ts"] });
     });
   });
