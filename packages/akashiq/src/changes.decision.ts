@@ -29,4 +29,8 @@ export const changesDecisions = {
       "`akashiq changes` reports a range of commits, HEAD~1 to HEAD by default, and `akashiq hook install` adds it to the post-commit hook without overwriting an existing hook",
     dependsOn: (): AnyDecision[] => [changesDecisions.warnAfterCommit],
   } satisfies Decision,
+  hookOutsideRepository: {
+    decision: "`akashiq hook install` outside a git repository says it skipped the hook and exits without an error",
+    dependsOn: (): AnyDecision[] => [changesDecisions.commands],
+  } satisfies Decision,
 };

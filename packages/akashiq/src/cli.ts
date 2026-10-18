@@ -6,23 +6,8 @@ import { hookCommand, installHook } from "./changes/hook.ts";
 import { collectWarnings, formatWarnings } from "./changes/report.ts";
 import { loadConfig } from "./config.ts";
 import { startDashboard } from "./dashboard/server.ts";
-import { dashboardDecisions } from "./dashboard.decision.ts";
-import { defaultSkillDirectories, installSkill } from "./skill/install.ts";
-
-const usage = `Usage:
-  akashiq dashboard [root] [--port <port>]
-  akashiq skill install [root] [--dir <dir>]...
-  akashiq changes [--from <rev>] [--to <rev>]
-  akashiq hook install
-
-Commands:
-  dashboard       Serve the decision dashboard for the project at root (default: .)
-                  on --port (default: ${dashboardDecisions.defaultPort.value}; 0 picks a free port)
-  skill install   Copy the Akashiq agent skill into root (default: .) under each --dir
-                  (default: ${defaultSkillDirectories.join(", ")}). Use --dir .claude/skills for Claude Code.
-  changes         Warn about decisions the commits from --from (default: HEAD~1) to --to
-                  (default: HEAD) may have affected. Prints nothing when there are none.
-  hook install    Run \`akashiq changes\` after every commit through the git post-commit hook.`;
+import { helpText } from "./help.ts";
+import { installSkill } from "./skill/install.ts";
 
 const { positionals, values } = parseArgs({
   allowPositionals: true,
@@ -41,8 +26,11 @@ function fail(message: string): never {
 }
 
 const [command, ...rest] = positionals;
-if (values.help) {
-  console.log(usage);
+if (command === "help" || values.help) {
+  const name = command === "help" ? rest[0] : command;
+  const text = helpText(name);
+  if (text === undefined) fail(`Unknown command: ${name}\n\n${helpText()}`);
+  console.log(text);
 } else if (command === "dashboard") {
   const port = values.port === undefined ? undefined : Number(values.port);
   if (port !== undefined && !(Number.isInteger(port) && port >= 0 && port < 65536)) fail(`Invalid port: ${values.port}`);
@@ -62,7 +50,8 @@ if (values.help) {
   const result = installHook(process.cwd());
   if (result.status === "installed") console.log(`Installed the post-commit hook at ${result.path}`);
   if (result.status === "already-installed") console.log(`The post-commit hook at ${result.path} already runs akashiq`);
+  if (result.status === "not-a-repository") console.log("Not in a git repository, so no post-commit hook was installed");
   if (result.status === "exists") fail(`A post-commit hook already exists at ${result.path}. Add this line to it:\n  ${hookCommand}`);
 } else {
-  fail(usage);
+  fail(helpText() ?? "");
 }

@@ -140,7 +140,9 @@ npx akashiq changes        # or run it yourself: HEAD~1..HEAD by default, or --f
   - Depended on by shippingDecisions.thresholdAfterDiscount (src/shipping.decision.ts:9): Compare the order total after coupons, not before, with the free shipping threshold
 ```
 
-`hook install`은 `core.hooksPath`를 포함해 git이 쓰는 hook 디렉터리에 씁니다. post-commit hook이 이미 있으면 건드리지 않으니, 거기에 `npx --no-install akashiq changes`를 직접 추가하세요.
+`hook install`은 `core.hooksPath`를 포함해 git이 쓰는 hook 디렉터리에 씁니다. post-commit hook이 이미 있으면 건드리지 않으니, 거기에 `npx --no-install akashiq changes`를 직접 추가하세요. git 저장소 밖에서는 아무것도 설치하지 않고 그렇다고 알려 줍니다.
+
+모든 명령의 옵션은 `npx akashiq help`로, 명령 하나의 옵션은 `npx akashiq help <command>`로 볼 수 있습니다.
 
 ## 동작 방식
 

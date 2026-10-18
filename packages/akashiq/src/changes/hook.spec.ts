@@ -1,4 +1,6 @@
-import { readFileSync, statSync, writeFileSync } from "node:fs";
+import { execFileSync } from "node:child_process";
+import { mkdtempSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { guards } from "@akashiq/core";
 import { afterEach, describe, expect, it } from "vitest";
@@ -25,6 +27,18 @@ describe("installHook", () => {
       writeFileSync(path, "#!/bin/sh\necho mine\n");
       expect(installHook(repository.root).status).toBe("exists");
       expect(readFileSync(path, "utf8")).toBe("#!/bin/sh\necho mine\n");
+    });
+  });
+
+  it("skips the hook outside a git repository", () => {
+    guards(changesDecisions.hookOutsideRepository, () => {
+      const directory = mkdtempSync(join(tmpdir(), "akashiq-"));
+      try {
+        expect(() => execFileSync("git", ["rev-parse"], { cwd: directory, stdio: "pipe" })).toThrow();
+        expect(installHook(directory)).toEqual({ status: "not-a-repository" });
+      } finally {
+        rmSync(directory, { recursive: true, force: true });
+      }
     });
   });
 

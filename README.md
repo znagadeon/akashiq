@@ -140,7 +140,9 @@ After each commit, Akashiq warns about decisions the commit may have affected: a
   - Depended on by shippingDecisions.thresholdAfterDiscount (src/shipping.decision.ts:9): Compare the order total after coupons, not before, with the free shipping threshold
 ```
 
-`hook install` writes to the hooks directory git uses, `core.hooksPath` included, and leaves an existing post-commit hook alone; add `npx --no-install akashiq changes` to it yourself.
+`hook install` writes to the hooks directory git uses, `core.hooksPath` included, and leaves an existing post-commit hook alone; add `npx --no-install akashiq changes` to it yourself. Outside a git repository it installs nothing and says so.
+
+Run `npx akashiq help` for every command's options, or `npx akashiq help <command>` for one.
 
 ## How it works
 
