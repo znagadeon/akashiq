@@ -55,7 +55,7 @@ if (values.help) {
   const from = values.from ?? "HEAD~1";
   // The first commit has nothing to compare with.
   if (repository.exists(from)) {
-    const report = formatWarnings(collectWarnings(repository, from, values.to ?? "HEAD", loadConfig(repository.root).ignore));
+    const report = formatWarnings(collectWarnings(repository, from, values.to ?? "HEAD", loadConfig(repository.root)));
     if (report) console.warn(report);
   }
 } else if (command === "hook" && rest[0] === "install") {

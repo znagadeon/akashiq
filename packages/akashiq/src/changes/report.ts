@@ -1,4 +1,5 @@
 // Turns the changes between two revisions into warnings about decisions, and prints them. Reads through a Repository, so it can run without git.
+import { type Config, defaultConfig } from "../config.ts";
 import { type DecisionEntry, parseDecisions } from "../parser/decisions.ts";
 import { isDecisionFile, isScanned } from "../parser/project.ts";
 import { referrersOf } from "../parser/references.ts";
@@ -39,10 +40,11 @@ export interface DecisionWarning {
   referrers: DecisionEntry[];
 }
 
-/** Warnings for decisions a change between two revisions may have affected, in the order they come up. Paths matching ignore are left out. */
-export function collectWarnings(repository: Repository, from: string, to: string, ignore: readonly string[] = []): DecisionWarning[] {
-  const isTypeScript = (path: string | undefined) => path !== undefined && /\.(ts|tsx|mts|cts)$/.test(path) && isScanned(path, ignore);
-  const isDecision = (path: string | undefined) => path !== undefined && isDecisionFile(path, ignore);
+/** Warnings for decisions a change between two revisions may have affected, in the order they come up. Decision files are found and paths left out as config says. */
+export function collectWarnings(repository: Repository, from: string, to: string, config: Config = defaultConfig): DecisionWarning[] {
+  const isTypeScript = (path: string | undefined) =>
+    path !== undefined && /\.(ts|tsx|mts|cts)$/.test(path) && isScanned(path, config.ignore);
+  const isDecision = (path: string | undefined) => path !== undefined && isDecisionFile(path, config);
   const guards = new Map<string, Map<string, GuardChange>>();
   const changes = new Map<string, DecisionChange>();
 

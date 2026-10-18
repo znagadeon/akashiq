@@ -3,9 +3,10 @@
 import { type FSWatcher, readFileSync, watch } from "node:fs";
 import { createServer, type ServerResponse } from "node:http";
 import type { AddressInfo } from "node:net";
-import { basename } from "node:path";
+import { basename, sep } from "node:path";
+import { type Config, defaultConfig, loadConfig } from "../config.ts";
 import { dashboardDecisions } from "../dashboard.decision.ts";
-import { scanProject } from "../parser/project.ts";
+import { isDecisionFile, scanProject } from "../parser/project.ts";
 import { dashboardData } from "./data.ts";
 
 const assets: Record<string, { file: string; type: string }> = {
@@ -14,9 +15,18 @@ const assets: Record<string, { file: string; type: string }> = {
   "/style.css": { file: "style.css", type: "text/css; charset=utf-8" },
 };
 
-/** Files whose change can change what the dashboard shows: the suffixes scanProject reads, and the config. */
-const watched = /\.decision\.ts$|\.(spec|test)\.(ts|tsx|mts|cts)$|(^|[\\/])akashiq\.config\.json$/;
+/** Files other than decision files whose change can change what the dashboard shows: the tests scanProject reads, and the config. */
+const watched = /\.(spec|test)\.(ts|tsx|mts|cts)$|(^|[\\/])akashiq\.config\.json$/;
 const ignored = /(^|[\\/])(node_modules|dist|\.git)([\\/]|$)/;
+
+/** The config for picking which changes to report. A malformed config falls back to the defaults; the scan reports the error itself. */
+function configOrDefault(root: string): Config {
+  try {
+    return loadConfig(root);
+  } catch {
+    return defaultConfig;
+  }
+}
 
 export interface Dashboard {
   url: string;
@@ -57,7 +67,8 @@ export async function startDashboard(root: string, port = dashboardDecisions.def
   // Saving a file often fires several events at once, so wait for them to settle before telling the dashboards.
   let timer: NodeJS.Timeout | undefined;
   const watcher: FSWatcher = watch(root, { recursive: true }, (_event, file) => {
-    if (!file || ignored.test(file) || !watched.test(file)) return;
+    if (!file || ignored.test(file)) return;
+    if (!watched.test(file) && !isDecisionFile(file.split(sep).join("/"), configOrDefault(root))) return;
     clearTimeout(timer);
     timer = setTimeout(() => {
       for (const client of clients) client.write("event: change\ndata: {}\n\n");

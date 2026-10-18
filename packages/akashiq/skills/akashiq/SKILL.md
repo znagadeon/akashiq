@@ -31,7 +31,7 @@ export const shippingDecisions = {
 };
 ```
 
-- Export decisions as an object named `xxxDecisions`. The key path, such as `shippingDecisions.freeShippingThreshold`, is the decision's ID. Akashiq finds `*.decision.ts` files anywhere in the project.
+- Export decisions as an object named `xxxDecisions`. The key path, such as `shippingDecisions.freeShippingThreshold`, is the decision's ID. Akashiq finds `*.decision.ts` files anywhere in the project, or the files matching `patterns` in `akashiq.config.json`; where a project sets `patterns`, put decision files where it says.
 - If code reads a value, declare `Decision<ValueType>` and put it in `value`. Otherwise declare `Decision`, which forbids `value`.
 - Write `value` as a literal in place. Akashiq reads decisions without running them, so a value that refers to a constant, spreads another object, or calls a function can't be shown or tracked. `as` and `satisfies` are fine.
 - One decision holds one thing. If something was decided separately per place or item, make separate decisions.
@@ -44,7 +44,7 @@ export const shippingDecisions = {
 
 ## Before adding or changing a policy
 
-1. Search the existing decisions for ones the request touches: `*.decision.ts` files, or the dashboard's search.
+1. Search the existing decisions for ones the request touches: the decision files, or the dashboard's search.
 2. If the request may conflict with a decision, stop and show the user that decision (see below) with the tests that guard it, and ask whether to change it. You may point out a possible conflict; the user decides whether it is one.
 3. Also show the decisions that depend on it (those listing it in `dependsOn`); they may no longer hold.
 4. Once the user decides, change things in order: the decision, then the tests that guard it, then the implementation.

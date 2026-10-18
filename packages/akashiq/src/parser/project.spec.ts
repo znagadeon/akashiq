@@ -4,6 +4,7 @@ import { dirname, join } from "node:path";
 import { guards } from "@akashiq/core";
 import { afterEach, describe, expect, it } from "vitest";
 import { configDecisions } from "../config.decision.ts";
+import { defaultConfig } from "../config.ts";
 import { parserDecisions } from "../parser.decision.ts";
 import { parseDecisions } from "./decisions.ts";
 import { scanProject } from "./project.ts";
@@ -25,8 +26,8 @@ function project(files: Record<string, string>): string {
 }
 
 describe("scanProject", () => {
-  it("finds decision files by suffix anywhere, not by directory", () => {
-    guards(parserDecisions.decisionFileSuffix, () => {
+  it("finds *.decision.ts files anywhere by default", () => {
+    guards(parserDecisions.decisionFilePatterns, () => {
       const inDecisionsDirectory = 'export const dirDecisions = { a: { decision: "In a decisions directory" } };';
       expect(parseDecisions("decisions/dir.ts", inDecisionsDirectory)).toHaveLength(1);
 
@@ -39,6 +40,30 @@ describe("scanProject", () => {
       );
       expect(scan.decisions.map((decision) => [decision.id, decision.file])).toEqual([
         ["cartDecisions.a", "src/deep/nested/cart.decision.ts"],
+      ]);
+    });
+  });
+
+  it("finds decision files by the patterns in akashiq.config.json instead", () => {
+    guards(parserDecisions.decisionFilePatterns, () => {
+      const decision = (name: string) => `export const ${name}Decisions = { a: { decision: "${name}" } };`;
+      const root = project({
+        "decisions/cart.ts": decision("cart"),
+        "decisions/deep/pricing.ts": decision("pricing"),
+        "policies/legacy.ts": decision("legacy"),
+        "src/shipping.decision.ts": decision("shipping"),
+        "decisions/old/stale.ts": decision("stale"),
+      });
+      expect(scanProject(root).decisions.map((entry) => entry.id)).toEqual(["shippingDecisions.a"]);
+
+      writeFileSync(
+        join(root, "akashiq.config.json"),
+        '{ "patterns": ["decisions/**/*.ts", "policies/*.ts", "decisions/*.ts"], "ignore": ["decisions/old/**"] }',
+      );
+      expect(scanProject(root).decisions.map((entry) => [entry.id, entry.file])).toEqual([
+        ["cartDecisions.a", "decisions/cart.ts"],
+        ["pricingDecisions.a", "decisions/deep/pricing.ts"],
+        ["legacyDecisions.a", "policies/legacy.ts"],
       ]);
     });
   });
@@ -73,7 +98,7 @@ describe("scanProject", () => {
         "packages/app/test/fixtures/fixture.decision.ts": decision("fixture"),
         "examples/minimal/src/shop.test.ts": 'it("a", () => guards(shopDecisions.a, () => {}));',
       });
-      expect(scanProject(root, []).decisions).toHaveLength(3);
+      expect(scanProject(root, defaultConfig).decisions).toHaveLength(3);
 
       writeFileSync(join(root, "akashiq.config.json"), '{ "ignore": ["examples/**", "**/fixtures/**"] }');
       const scan = scanProject(root);

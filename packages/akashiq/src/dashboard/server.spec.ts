@@ -4,6 +4,7 @@ import { dirname, join } from "node:path";
 import { guards } from "@akashiq/core";
 import { afterEach, describe, expect, it } from "vitest";
 import { dashboardDecisions } from "../dashboard.decision.ts";
+import { parserDecisions } from "../parser.decision.ts";
 import type { DashboardData } from "./data.ts";
 import { type Dashboard, startDashboard } from "./server.ts";
 
@@ -27,6 +28,24 @@ async function serve(files: Record<string, string>): Promise<Dashboard> {
   for (const [path, content] of Object.entries(files)) write(path, content);
   dashboard = await startDashboard(root, 0);
   return dashboard;
+}
+
+/** Reads the dashboard's event stream; until resolves once text has arrived. */
+async function events(url: string) {
+  const response = await fetch(`${url}events`);
+  const reader = response.body?.getReader();
+  if (!reader) throw new Error("no event stream");
+  const decoder = new TextDecoder();
+  let received = "";
+  const until = async (text: string) => {
+    while (!received.includes(text)) {
+      const { value, done } = await reader.read();
+      if (done) throw new Error(`stream ended before ${text}`);
+      received += decoder.decode(value);
+    }
+  };
+  await until(": connected");
+  return { until, close: () => reader.cancel() };
 }
 
 const decisionIds = async (url: string) =>
@@ -56,25 +75,29 @@ describe("dashboard server", () => {
   it("tells open dashboards when a decision file changes", async () => {
     await guards(dashboardDecisions.liveData, async () => {
       const { url } = await serve({ "src/cart.decision.ts": 'export const cartDecisions = { a: { decision: "A" } };' });
-      const response = await fetch(`${url}events`);
-      const reader = response.body?.getReader();
-      if (!reader) throw new Error("no event stream");
-      const decoder = new TextDecoder();
-      let received = "";
-      const until = async (text: string) => {
-        while (!received.includes(text)) {
-          const { value, done } = await reader.read();
-          if (done) throw new Error(`stream ended before ${text}`);
-          received += decoder.decode(value);
-        }
-      };
-      await until(": connected");
+      const stream = await events(url);
       expect(await decisionIds(url)).toEqual(["cartDecisions.a"]);
 
       write("src/pricing.decision.ts", 'export const pricingDecisions = { currency: { decision: "Charge in USD" } };');
-      await until("event: change");
+      await stream.until("event: change");
       expect(await decisionIds(url)).toEqual(["cartDecisions.a", "pricingDecisions.currency"]);
-      await reader.cancel();
+      await stream.close();
+    });
+  });
+
+  it("watches the decision files the configured patterns find", async () => {
+    await guards(parserDecisions.decisionFilePatterns, async () => {
+      const { url } = await serve({
+        "akashiq.config.json": '{ "patterns": ["decisions/*.ts"] }',
+        "decisions/cart.ts": 'export const cartDecisions = { a: { decision: "A" } };',
+      });
+      const stream = await events(url);
+      expect(await decisionIds(url)).toEqual(["cartDecisions.a"]);
+
+      write("decisions/pricing.ts", 'export const pricingDecisions = { currency: { decision: "Charge in USD" } };');
+      await stream.until("event: change");
+      expect(await decisionIds(url)).toEqual(["cartDecisions.a", "pricingDecisions.currency"]);
+      await stream.close();
     });
   });
 });

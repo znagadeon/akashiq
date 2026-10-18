@@ -1,6 +1,8 @@
 import { guards } from "@akashiq/core";
 import { afterEach, describe, expect, it } from "vitest";
 import { changesDecisions } from "../changes.decision.ts";
+import { defaultConfig } from "../config.ts";
+import { parserDecisions } from "../parser.decision.ts";
 import { gitRepository } from "./git.ts";
 import { collectWarnings, formatWarnings } from "./report.ts";
 import { type TestRepository, testRepository } from "./test-repository.ts";
@@ -84,7 +86,21 @@ describe("warnings after a commit", () => {
     repository.commit({ "examples/shop/shipping.decision.ts": decisions("50").replace("just below", "right below") });
     const git = gitRepository(repository.root);
     expect(collectWarnings(git, "HEAD~1", "HEAD")).toHaveLength(1);
-    expect(collectWarnings(git, "HEAD~1", "HEAD", ["examples/**"])).toEqual([]);
+    expect(collectWarnings(git, "HEAD~1", "HEAD", { ...defaultConfig, ignore: ["examples/**"] })).toEqual([]);
+  });
+
+  it("finds changed decision files by the configured patterns", () => {
+    guards(parserDecisions.decisionFilePatterns, () => {
+      repository = testRepository();
+      repository.commit({ "decisions/shipping.ts": decisions("50") });
+      repository.commit({ "decisions/shipping.ts": decisions("50").replace("just below", "right below") });
+      const git = gitRepository(repository.root);
+      expect(collectWarnings(git, "HEAD~1", "HEAD")).toEqual([]);
+      const warnings = collectWarnings(git, "HEAD~1", "HEAD", { ...defaultConfig, patterns: ["decisions/*.ts"] });
+      expect(warnings.map((warning) => [warning.id, warning.entry?.file])).toEqual([
+        ["shippingDecisions.freeShippingThreshold", "decisions/shipping.ts"],
+      ]);
+    });
   });
 
   it("stays quiet when a commit touches neither decisions nor the tests that guard them", () => {

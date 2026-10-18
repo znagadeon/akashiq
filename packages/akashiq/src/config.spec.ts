@@ -19,14 +19,15 @@ function withConfig(content: string | undefined): string {
 }
 
 describe("loadConfig", () => {
-  it("ignores nothing when there is no config file", () => {
-    expect(loadConfig(withConfig(undefined))).toEqual({ ignore: [] });
+  it("ignores nothing and looks for *.decision.ts files when there is no config file", () => {
+    expect(loadConfig(withConfig(undefined))).toEqual({ ignore: [], patterns: ["**/*.decision.ts"] });
   });
 
   it("reads akashiq.config.json at the project root", () => {
     guards(configDecisions.configFile, () => {
       expect(configFile).toBe("akashiq.config.json");
-      expect(loadConfig(withConfig('{ "ignore": ["examples/**"] }'))).toEqual({ ignore: ["examples/**"] });
+      expect(loadConfig(withConfig('{ "ignore": ["examples/**"] }'))).toEqual({ ignore: ["examples/**"], patterns: ["**/*.decision.ts"] });
+      expect(loadConfig(withConfig('{ "patterns": ["decisions/**/*.ts"] }'))).toEqual({ ignore: [], patterns: ["decisions/**/*.ts"] });
     });
   });
 
@@ -35,6 +36,8 @@ describe("loadConfig", () => {
     ["a non-object", "[]", "must contain an object"],
     ["a misspelled setting", '{ "ignores": [] }', "unknown settings: ignores"],
     ["ignore that isn't a list of strings", '{ "ignore": "examples/**" }', '"ignore" must be an array'],
+    ["patterns that isn't a list of strings", '{ "patterns": "decisions/**/*.ts" }', '"patterns" must be a non-empty array'],
+    ["empty patterns", '{ "patterns": [] }', '"patterns" must be a non-empty array'],
   ])("rejects %s instead of guessing", (_, content, message) => {
     expect(() => loadConfig(withConfig(content))).toThrow(message);
   });

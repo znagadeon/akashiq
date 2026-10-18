@@ -1,9 +1,14 @@
 import type { AnyDecision, Decision } from "@akashiq/core";
+import { configDecisions } from "./config.decision.ts";
 
 export const parserDecisions = {
-  decisionFileSuffix: {
-    decision: "Find decision files by the *.decision.ts suffix, not by directory",
-  } satisfies Decision,
+  decisionFilePatterns: {
+    decision:
+      "Find decision files by the glob patterns in the config's patterns list, *.decision.ts files anywhere in the project by default",
+    value: ["**/*.decision.ts"],
+    reason: "Projects differ in where they keep decisions: next to the code they concern, or gathered in a decisions directory",
+    dependsOn: (): AnyDecision[] => [configDecisions.configFile],
+  } satisfies Decision<string[]>,
   staticAnalysis: {
     decision: "Read decisions and tests by static analysis of the source, without executing project code",
     reason: "Akashiq should still run when the project's own code can't, such as before its development environment is set up",
