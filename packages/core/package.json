@@ -1,6 +1,6 @@
 {
   "name": "@akashiq/core",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Decision types and guards for recording why your code exists and linking it to tests.",
   "license": "MIT",
   "repository": {
