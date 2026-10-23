@@ -119,6 +119,7 @@ export function formatWarnings(warnings: DecisionWarning[]): string {
     if (entry?.decision !== undefined) lines.push(`    ${entry.decision}`);
     if (entry?.reason !== undefined) lines.push(`    Why: ${entry.reason}`);
     if (entry?.unconfirmed) lines.push("    Unconfirmed");
+    if (entry?.unimplemented) lines.push("    Unimplemented");
     if (warning.added) {
       // A new decision has no earlier tests to compare with, so only say which tests guard it.
       const tests = [...new Set(warning.guards.filter((guard) => !guard.helper).map((guard) => `${guard.file}:${guard.line}`))];

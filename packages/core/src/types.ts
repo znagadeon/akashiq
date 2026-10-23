@@ -7,6 +7,8 @@ interface DecisionText {
   reason?: string;
   /** An agent made this decision and the user has not confirmed it yet. Remove once the user confirms. */
   unconfirmed?: true;
+  /** The code doesn't follow this decision yet. Remove once it does and a test guards it. */
+  unimplemented?: true;
   /**
    * Decisions this one relies on. When one of them changes, this decision should be revisited too. If the text mentions another decision's ID, list it here as well.
    * Declared as a function so it can point within the same object or across files that import each other. Annotate the return type: `(): AnyDecision[] => [pricingDecisions.currency]`.

@@ -1,4 +1,6 @@
+import { guards } from "@akashiq/core";
 import { describe, expect, it } from "vitest";
+import { dashboardDecisions } from "../dashboard.decision.ts";
 import { dashboardData } from "./data.ts";
 
 const decision = (id: string, dependsOn: string[] = []) => ({ id, file: "a.decision.ts", line: 1, decision: id, dependsOn });
@@ -17,5 +19,21 @@ describe("dashboardData", () => {
       { id: "pricingDecisions.currency", tests: ["charges in USD"], referrers: ["cartDecisions.freeShipping"] },
     ]);
     expect(data.unknownGuards.map((test) => test.decision)).toEqual(["cartDecisions.renamed"]);
+  });
+
+  it("lists the decisions still marked unimplemented that a test already guards", () => {
+    guards(dashboardDecisions.warnGuardedUnimplemented, () => {
+      const data = dashboardData("shop", {
+        decisions: [
+          { ...decision("cartDecisions.guarded"), unimplemented: true as const },
+          { ...decision("cartDecisions.pending"), unimplemented: true as const },
+          decision("cartDecisions.done"),
+        ],
+        guards: [guard("cartDecisions.guarded", "applies the rule"), guard("cartDecisions.done", "applies the other rule")],
+        unknownGuards: [],
+      });
+      expect(data.decisions.find((entry) => entry.id === "cartDecisions.guarded")?.tests).toHaveLength(1);
+      expect(data.guardedUnimplemented).toEqual(["cartDecisions.guarded"]);
+    });
   });
 });

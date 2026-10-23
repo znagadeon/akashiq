@@ -22,9 +22,10 @@
         <option value="guarded">Guarded</option>
         <option value="unguarded">Not guarded</option>
       </select>
-      <select id="confirm" aria-label="Confirmation">
+      <select id="status" aria-label="Status">
         <option value="all">All decisions</option>
         <option value="unconfirmed">Unconfirmed only</option>
+        <option value="unimplemented">Unimplemented only</option>
       </select>
       <span id="count" class="count"></span>
       <button id="expand" type="button" class="text-button">Expand all</button>
@@ -35,6 +36,10 @@
     <section id="unknown" class="warning" hidden>
       <h2>guards with no matching decision</h2>
       <ul id="unknown-list"></ul>
+    </section>
+    <section id="leftover" class="warning" hidden>
+      <h2>unimplemented decisions that tests already guard</h2>
+      <ul id="leftover-list"></ul>
     </section>
     <div id="files"><p class="empty">Loading…</p></div>
   </main>

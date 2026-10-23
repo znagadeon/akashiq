@@ -14,6 +14,7 @@ export interface DecisionEntry {
   /** `value` refers to other code (a constant, a spread, a call), so its text doesn't show the actual value. */
   nonLiteralValue?: true;
   unconfirmed?: true;
+  unimplemented?: true;
   /** IDs listed in `dependsOn`. */
   dependsOn: string[];
 }
@@ -80,6 +81,7 @@ function entry(id: string, file: string, line: number, object: ts.ObjectLiteralE
     ...(value ? { value: dedent(unwrap(value).getText(sourceFile)) } : {}),
     ...(value && !isLiteral(value) ? { nonLiteralValue: true as const } : {}),
     ...(properties.get("unconfirmed")?.kind === ts.SyntaxKind.TrueKeyword ? { unconfirmed: true as const } : {}),
+    ...(properties.get("unimplemented")?.kind === ts.SyntaxKind.TrueKeyword ? { unimplemented: true as const } : {}),
     dependsOn: dependencies(properties.get("dependsOn"), sourceFile),
   };
 }

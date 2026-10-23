@@ -40,6 +40,7 @@ export const shippingDecisions = {
 - `reason` holds only reasons the user gave. Never invent one. A reason you proposed counts once the user heard and accepted it. If you can't tell whether they accepted it, leave it out. If the user decided without a reason, omit `reason`; don't ask for one or write "not given yet". Don't record who decided or when.
 - If a decision relies on another, list it in `dependsOn`. If `decision` or `reason` mentions another decision's ID, list that one too. Annotate the return type as `AnyDecision[]`.
 - A decision you made rather than the user, including going ahead with your own recommendation, gets `unconfirmed: true`. Remove it once the user confirms.
+- A decision the code doesn't follow yet, such as one recorded ahead of the work, gets `unimplemented: true`. Remove it in the change that implements the decision and guards it with a test. Don't describe an unimplemented decision as current behavior.
 - In JavaScript, mark each decision with JSDoc instead of `satisfies`: `/** @satisfies {Decision<number>} */ ({ … })`, with `/** @import { AnyDecision, Decision } from "@akashiq/core" */` at the top and `/** @returns {AnyDecision[]} */` on `dependsOn`.
 - When a decision changes, rewrite `decision` and `reason` as the single current decision. Don't append to the old text.
 
@@ -80,7 +81,7 @@ Whenever you point the user to a decision (asking them to confirm it, reporting 
 - the ID,
 - the `decision` text,
 - the `reason`, or that there is none,
-- `unconfirmed` and `dependsOn` if present,
+- `unconfirmed`, `unimplemented`, and `dependsOn` if present,
 - for each guarding test, one line on what it checks.
 
 An ID or file name alone is not enough.
@@ -88,4 +89,4 @@ An ID or file name alone is not enough.
 ## Tools
 
 - `npx akashiq changes [--from <rev>] [--to <rev>]` warns about decisions the commits in the range may have affected, HEAD~1 to HEAD by default. `npx akashiq hook install` runs it after every commit.
-- `npx akashiq dashboard [root] [--port <port>]` serves the dashboard on http://127.0.0.1:44519/ by default and reloads when decision or test files change. It flags guards that point to no decision and values that aren't literals.
+- `npx akashiq dashboard [root] [--port <port>]` serves the dashboard on http://127.0.0.1:44519/ by default and reloads when decision or test files change. It flags guards that point to no decision, values that aren't literals, and unimplemented decisions that a test already guards.

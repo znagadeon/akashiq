@@ -65,6 +65,7 @@ export const shippingDecisions = {
 | `reason` | Why, as the person who decided it said. Leave it out rather than make one up. |
 | `dependsOn` | Decisions this one relies on. When they change, this one should be revisited. |
 | `unconfirmed` | Set when an agent made the decision and a person hasn't confirmed it yet. |
+| `unimplemented` | Set when the code doesn't follow the decision yet. Remove it once the code does and a test guards it. |
 
 The key path, such as `shippingDecisions.freeShippingThreshold`, is the decision's ID.
 
@@ -123,7 +124,7 @@ npx akashiq dashboard              # http://127.0.0.1:44519/
 npx akashiq dashboard --port 8080  # another port; 0 picks a free one
 ```
 
-It serves the dashboard on localhost and reloads whenever a decision or test file changes. You can search decisions, filter those without tests or not yet confirmed, and follow `dependsOn` links both ways. It also flags `guards` calls that point to no decision and values that aren't literals.
+It serves the dashboard on localhost and reloads whenever a decision or test file changes. You can search decisions, filter those without tests, not yet confirmed, or not yet implemented, and follow `dependsOn` links both ways. It also flags `guards` calls that point to no decision, values that aren't literals, and unimplemented decisions that a test already guards.
 
 ### 5. Teach your agent
 

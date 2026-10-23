@@ -16,17 +16,21 @@ export interface DashboardData {
   decisions: DashboardDecision[];
   /** guards whose decision matches no decision ID. */
   unknownGuards: GuardingTest[];
+  /** IDs of decisions still marked unimplemented that a test already guards, so the flag was likely left behind. */
+  guardedUnimplemented: string[];
 }
 
 export function dashboardData(project: string, scan: ProjectScan): DashboardData {
   const referrers = referrersOf(scan.decisions);
+  const decisions = scan.decisions.map((decision) => ({
+    ...decision,
+    tests: scan.guards.filter((guard) => guard.decision === decision.id),
+    referrers: referrers.get(decision.id) ?? [],
+  }));
   return {
     project,
-    decisions: scan.decisions.map((decision) => ({
-      ...decision,
-      tests: scan.guards.filter((guard) => guard.decision === decision.id),
-      referrers: referrers.get(decision.id) ?? [],
-    })),
+    decisions,
     unknownGuards: scan.unknownGuards,
+    guardedUnimplemented: decisions.filter((decision) => decision.unimplemented && decision.tests.length > 0).map(({ id }) => id),
   };
 }

@@ -45,6 +45,13 @@ describe("parseDecisions", () => {
     expect(b?.unconfirmed).toBeUndefined();
   });
 
+  it("marks decisions the code doesn't follow yet", () => {
+    const source = 'export const fooDecisions = {\n  a: { decision: "A", unimplemented: true },\n  b: { decision: "B" },\n};';
+    const [a, b] = parseDecisions("foo.decision.ts", source);
+    expect(a?.unimplemented).toBe(true);
+    expect(b?.unimplemented).toBeUndefined();
+  });
+
   it("reads the IDs a decision depends on", () => {
     const source = lines(
       "export const fooDecisions = {",

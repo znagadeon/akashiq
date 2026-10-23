@@ -18,6 +18,17 @@ describe("Decision", () => {
     });
   });
 
+  it("marks a decision the code doesn't follow yet with unimplemented: true only", () => {
+    guards(coreDecisions.unimplementedFlag, () => {
+      const pending = { decision: "not implemented yet", unimplemented: true } satisfies Decision;
+      expectTypeOf(pending.unimplemented).toEqualTypeOf<true>();
+
+      // @ts-expect-error an implemented decision leaves the flag out instead of setting it to false
+      const implemented: Decision = { decision: "implemented", unimplemented: false };
+      void implemented;
+    });
+  });
+
   it("lets AnyDecision accept decisions with and without a value", () => {
     guards(coreDecisions.separateAnyDecision, () => {
       expectTypeOf<Decision>().toExtend<AnyDecision>();

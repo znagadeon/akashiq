@@ -15,4 +15,11 @@ export const dashboardDecisions = {
     decision: "Serve the dashboard on a fixed default port that spells akashiq in leet (AkAShIQ), unless --port is given",
     value: 44519,
   } satisfies Decision<number>,
+  warnGuardedUnimplemented: {
+    decision: "Warn on the dashboard about decisions still marked unimplemented that a test already guards",
+    reason: "So the flag doesn't stay behind once the decision is implemented",
+  } satisfies Decision,
+  countUnimplementedInGuardedTotals: {
+    decision: "Count unimplemented decisions in the dashboard's guarded totals like any other decision",
+  } satisfies Decision,
 };

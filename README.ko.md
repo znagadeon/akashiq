@@ -65,6 +65,7 @@ export const shippingDecisions = {
 | `reason` | 결정한 사람이 말한 이유입니다. 들은 이유가 없으면 지어내지 말고 비워 둡니다. |
 | `dependsOn` | 이 결정의 의존성입니다. 여기 적은 결정이 바뀌면 이 결정도 다시 검토해야 합니다. |
 | `unconfirmed` | 에이전트가 정하고 사람이 아직 확인하지 않은 결정에 붙입니다. |
+| `unimplemented` | 코드가 아직 따르지 않는 결정에 붙입니다. 코드가 따르고 테스트가 지키게 되면 지웁니다. |
 
 `shippingDecisions.freeShippingThreshold` 같은 키 경로가 결정의 ID입니다.
 
@@ -123,7 +124,7 @@ npx akashiq dashboard              # http://127.0.0.1:44519/
 npx akashiq dashboard --port 8080  # another port; 0 picks a free one
 ```
 
-localhost에 대시보드를 띄우고, 결정 파일이나 테스트 파일이 바뀔 때마다 다시 불러옵니다. 결정을 검색하고, 테스트가 없거나 아직 확인하지 않은 결정만 골라 보고, `dependsOn` 관계를 양쪽 방향으로 따라갈 수 있습니다. 어떤 결정도 가리키지 않는 `guards` 호출과 리터럴이 아닌 값도 표시합니다.
+localhost에 대시보드를 띄우고, 결정 파일이나 테스트 파일이 바뀔 때마다 다시 불러옵니다. 결정을 검색하고, 테스트가 없거나, 아직 확인하지 않았거나, 아직 구현하지 않은 결정만 골라 보고, `dependsOn` 관계를 양쪽 방향으로 따라갈 수 있습니다. 어떤 결정도 가리키지 않는 `guards` 호출, 리터럴이 아닌 값, 테스트가 이미 지키는데 unimplemented로 남은 결정도 표시합니다.
 
 ### 5. 에이전트에게 가르치기
 

@@ -10,7 +10,7 @@ const byId = (id) => /** @type {HTMLElement} */ (document.getElementById(id));
 
 const query = /** @type {HTMLInputElement} */ (byId("query"));
 const tested = /** @type {HTMLSelectElement} */ (byId("tested"));
-const confirm = /** @type {HTMLSelectElement} */ (byId("confirm"));
+const status = /** @type {HTMLSelectElement} */ (byId("status"));
 
 /** @type {DashboardData | undefined} */
 let data;
@@ -52,7 +52,7 @@ function matches(entry) {
   const text = `${entry.id} ${entry.decision ?? ""} ${entry.reason ?? ""} ${entry.value ?? ""}`.toLowerCase();
   return (
     (tested.value === "all" || (tested.value === "guarded") === entry.tests.length > 0) &&
-    (confirm.value === "all" || entry.unconfirmed === true) &&
+    (status.value === "all" || (status.value === "unconfirmed" ? entry.unconfirmed : entry.unimplemented) === true) &&
     words.every((word) => text.includes(word))
   );
 }
@@ -66,7 +66,7 @@ let loaded = false;
 
 function render() {
   if (!data) return;
-  const { decisions, unknownGuards } = data;
+  const { decisions, unknownGuards, guardedUnimplemented } = data;
   byId("project").textContent = data.project;
   document.title = `${data.project} · Akashiq`;
   if (!loaded) {
@@ -77,12 +77,18 @@ function render() {
   byId("summary").replaceChildren(
     summaryItem(`${guardedCount(decisions)}`, `/ ${decisions.length} guarded by tests`),
     summaryItem(String(decisions.filter((entry) => entry.unconfirmed).length), "unconfirmed"),
+    summaryItem(String(decisions.filter((entry) => entry.unimplemented).length), "unimplemented"),
     summaryItem(String(decisions.filter((entry) => entry.nonLiteralValue).length), "non-literal values"),
   );
 
   byId("unknown").hidden = unknownGuards.length === 0;
   byId("unknown-list").replaceChildren(
     ...unknownGuards.map((test) => h("li", {}, h("code", {}, test.decision), ` in ${test.name} `, location(test.file, test.line))),
+  );
+
+  byId("leftover").hidden = guardedUnimplemented.length === 0;
+  byId("leftover-list").replaceChildren(
+    ...guardedUnimplemented.map((id) => h("li", {}, h("button", { type: "button", class: "chip", onClick: () => jump(id) }, id))),
   );
 
   const shown = decisions.filter(matches);
@@ -135,6 +141,7 @@ function decisionRow(entry) {
       { class: "entry-meta" },
       h("code", { class: "id", title: `${entry.file}:${entry.line}` }, entry.id),
       entry.unconfirmed && h("span", { class: "badge", title: "An agent made this decision; the user hasn't confirmed it" }, "unconfirmed"),
+      entry.unimplemented && h("span", { class: "badge", title: "The code doesn't follow this decision yet" }, "unimplemented"),
       entry.nonLiteralValue &&
         h(
           "span",
@@ -179,7 +186,7 @@ function jump(id) {
   if (!target) return;
   query.value = "";
   tested.value = "all";
-  confirm.value = "all";
+  status.value = "all";
   expanded.add(target.file);
   render();
   document.getElementById(id)?.scrollIntoView({ block: "start" });
@@ -194,7 +201,7 @@ function setAllExpanded(open) {
 
 query.addEventListener("input", render);
 tested.addEventListener("change", render);
-confirm.addEventListener("change", render);
+status.addEventListener("change", render);
 byId("expand").addEventListener("click", () => setAllExpanded(true));
 byId("collapse").addEventListener("click", () => setAllExpanded(false));
 
