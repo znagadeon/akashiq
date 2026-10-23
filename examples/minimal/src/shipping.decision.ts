@@ -20,4 +20,9 @@ export const shippingDecisions = {
     value: 5,
     reason: "A flat fee is easier for customers to predict than rates by weight",
   } satisfies Decision<number>,
+  membersShipFree: {
+    decision: "Members ship free whatever their order total",
+    dependsOn: (): AnyDecision[] => [shippingDecisions.freeShippingThreshold],
+    unimplemented: true,
+  } satisfies Decision,
 };
